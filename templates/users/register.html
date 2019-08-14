@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    {% from 'formhelpers.html' import render_field %}
+
+    <div class="row">
+        <div class="col-12 col-md-8 offset-md-2">
+            <div class="card">
+                <h4 class="card-header text-center">Inscription</h4>
+                <div class="card-body">
+                    <form method="POST" action="">
+                        {{ render_field(form.username) }}
+                        {{ render_field(form.email) }}
+                        {{ render_field(form.password) }}
+                        {{ render_field(form.password_confirm) }}
+                        {{ render_field(form.account_type) }}
+                        <div class="form-group mt-4">
+                            {{ form.submit(class='btn btn-outline-success') }}
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock content %}

@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0 shrink-to-fit=no">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    {% if title %}
+        <title>{{ title }}  - Field Job Search</title>
+    {% else %}
+        <title>Field Job</title>
+    {% endif %}
+    <!-- <link href="https://fonts.googleapis.com/css?family=Sniglet&display=swap" rel="stylesheet"> -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+    {% block stylesheet %}{% endblock stylesheet %}
+</head>
+<body>
+    {% include 'partials/_nav.html' %}
+    <main class="py-4 container">
+        {% include 'partials/_flash.html' %}
+    {% block content %}{% endblock content %}
+    </main>
+    {% include 'partials/_footer.html' %}
+    <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script> -->
+    <script src="{{ url_for('static', filename='js/jquery.slim.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/bootstrap.bundle.js') }}"></script>
+    <script crossorigin src="{{ url_for('static', filename='js/react.development.js') }}"></script>
+    <script crossorigin src="{{ url_for('static', filename='js/react-dom.development.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/react-router-dom.min.js') }}"></script>
+    {% block javascript %}{% endblock javascript %}
+</body>
+</html>
