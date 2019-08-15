@@ -25,8 +25,15 @@ class Offers extends React.Component{
     constructor(props){
         super(props)
         this.state = {
-            offers:[]
+            offers:[],
+            ollowed: false
         }
+    }
+    apply(e, offer_id){
+        e.preventDefault()
+        fetch('/offres/'+ offer_id +'/postul').then(res => {
+            console.log(res.ok)
+        })
     }
     componentDidMount(){
         fetch('/offres/list', {
@@ -34,7 +41,8 @@ class Offers extends React.Component{
         }).then(res => {
             res.json().then(res => {
                 this.setState({
-                    offers: res
+                    offers: res.offers,
+                    ollowed: res.ollowed
                 })
             })
         })
@@ -43,6 +51,7 @@ class Offers extends React.Component{
     render()
     {
         const html = this.state.offers.map((offer) => {
+            let link = this.state.ollowed ? <a onClick={(e) => this.apply(e, offer.id)} href={ '/offers/' + offer.id + '/postuler'} className="btn btn-link">Postuler directement</a> : '' 
             return (
                 <div className="card mb-2" key={offer.id}>
                 <div className="card-body">
@@ -50,7 +59,7 @@ class Offers extends React.Component{
                     Depuis le <small className="text-muted">{ offer.date_posted }</small>&nbsp;&nbsp;&nbsp;
                     <strong>{ offer.enterprise }</strong>
                     <p className="card-text">{ offer.description }</p>
-                    <a href="#" className="btn btn-link">Postuler directement</a>
+                    {link}
                 </div>
             </div>
             )
@@ -68,11 +77,12 @@ class Enterprise extends React.Component {
     constructor(propos){
         super(propos)
         this.state = {
+            id: 0,
             name: '',
-            enterprise: '',
             description: '',
-            className: 'alert alert-success alert-dismissible fade show d-none',
-            infoMessage: ''
+            offers: [],
+            alertMessage: ''
+
         }
         
 
@@ -89,24 +99,8 @@ class Enterprise extends React.Component {
         
     }
 
-    handleEnterprise = (e) => {
-        this.setState({
-            enterprise: e.target.value
-        })
-        
-    }
-
     handleSubmit = (e) => {
         e.preventDefault()
-        let replace = `
-        <div class="${this.state.className}" role="alert">${this.state.infoMessage}
-            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                <span aria-hidden="true">&times;</span>
-            </button>
-        </div>
-        `
-        let alertElement = $('#alert')
-        alertElement.html(replace)
         fetch('/offres/create', {
             method: 'POST',
             credentials: 'same-origin',
@@ -116,74 +110,235 @@ class Enterprise extends React.Component {
             },
             body: JSON.stringify({
                 name: this.state.name,
-                enterprise: this.state.enterprise,
                 description: this.state.description,
             }),
         }).then(res => {
             if (res.ok){
-                res.json().then(res => {
-                    this.setState({
-                        infoMessage: 'Votre Offre a bien été ajouter',
-                        className: 'alert alert-success alert-dismissible fade show'
+                res.json().then(offer => {
+                    this.setState(satate => {
+                        return {
+                            alertMessage: 'L\'offre a bien été ajouter',
+                            offers: [offer, ...this.state.offers],
+                        }
                     })
-                    console.log(res)
                 })
             }else{
                 this.setState({
-                    infoMessage: 'Oups! Désolé impossible d\'ajouter l\' offre',
-                    className: 'alert alert-danger alert-dismissible fade show'
+                    alertMessage: 'Oups! Il se peut que vous n\'avez pas bien remplie les champs.'
                 })
+               
             }
         })
         this.state.description = ''
-        this.state.name = '',
-        this.state.enterprise = ''
+        this.state.name = ''
         
     }
+    handleEdit(){
+        fetch('/offres/' + this.state.id + '/edit', {
+            method: 'POST',
+            headers:{
+                'Content-Type': 'application/json'
+            },
+            body:JSON.stringify({
+                id: this.state.id,
+                name:this.state.name,
+                description: this.state.description
+            })
+        }).then(res => {
+            if(res.ok){
+                res.json().then(offer => {
+                    this.setState((state) => {
+                        let filtred = state.offers.filter(f  => {
+                           return  f.id != offer.id
+                        })
+                       return  {offers: [offer, ...filtred]}
+                    })
+                })
+            }
+        })
+        this.setState({
+            id: 0,
+            name: '',
+            description: ''
+        })
+        $('.modal').modal('hide')
+        $('#form-create').show()
+    }
+    handleDelete(offer){
+        fetch('/offres/' + offer.id + '/delete', {
+        }).then(res => {
+            if(res.ok){
+                res.json().then(res => {
+                    this.setState(state => {
+                        return {
+                            offers: state.offers.filter(f => f != offer)
+                        }
+                    })
+                })
+            }
+        })
+    }
+    showModal(offer){
+        this.setState({
+            id: offer.id,
+            name: offer.name,
+            description: offer.description
+        })
+        $('.modal').modal()
+        $('#form-create').hide()
+    }
+    componentDidMount() {
+        fetch('/offres/enterprise').then(res => {
+            res.json().then( res => { this.setState({
+                offers: res
+            })})
+        })
+    }
     render(){
+        let list_body = this.state.offers.map(offer => {
+            return (
+                <tr key={offer.id} data-id={offer.id}>
+                    <td>#{offer.id}</td>
+                    <td>{offer.name}</td>
+                    <td>
+                        <button onClick={ () => this.showModal(offer)} className="btn btn-warning btn-sm">modifier</button> &nbsp;
+                        <button onClick={() => this.handleDelete(offer)} className="btn btn-danger btn-sm">suprimer</button>
+                    </td>
+                </tr>
+            )
+        })
+        let alert = <div className="alert alert-warning alert-dismissible fade show" role="alert">
+                        {this.state.alertMessage}
+                        <button onClick={() => this.setState({alertMessage: ''})} type="button" className="close" data-dismiss="alert" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+        let alertMessage = this.state.alertMessage ? alert : ''
         return (
             <div>
                 <div className="row">
                     <div className="col-md-8">
+                        <table className="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>#Identifient</th>
+                                    <th>Nom</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {list_body}
+                            </tbody>
+                        </table>
+                    </div>
+                    <div className="col-md-4">
                         <div className="card">
                             <h4 className="card-header">Ajouter Une Nouvelle Offer</h4>
                             <div className="card-body">
-                                <div id="alert"></div>
-                                <form>
+                                {
+                                   alertMessage
+                                }
+                                <form id="form-create">
                                 <div className="form-group">
                                     <label form="name" className="control-label">Le nom</label>
                                     <input type="text" name="name" id="name" value={this.state.name} className="form-control" onChange={this.handleName}/> 
-                                </div>
-                                <div className="form-group">
-                                    <label form="enterprise" className="control-label">Votre entreprise</label>
-                                    <input type="text" name="enterprise" id="name" value={this.state.enterprise} className="form-control" onChange={this.handleEnterprise}/> 
                                 </div>
                                 <div className="form-group">
                                     <label from="description" className="control-label">La description</label>
                                     <textarea onChange={this.handleDescription} name="desciption" id="desciption" className="form-control" value={this.state.description}></textarea>
                                 </div>
                                 <div className="form-group">
-                                    <button className="btn btn-outline-success" onSubmit={this.handleSubmit} onClick={this.handleSubmit}>Créer l'offre</button>
+                                    <button className="btn btn-outline-success" onClick={this.handleSubmit}>Créer l'offre</button>
                                 </div>
                                 </form>
                             </div>
                         </div>
                     </div>
-                    <div className="col-md-4">
-                    he application context is a good place to store common data during a request or CLI command. Flask provides the g object for this purpose. It is a simple namespace object that has the same lifetime as an application context.
+                    
+                </div>
+
+                <div className="modal" tabIndex="-1" role="dialog">
+                    <div className="modal-dialog" role="document">
+                        <div className="modal-content">
+                        <div className="modal-header">
+                            <h5 className="modal-title">modifier l'offer</h5>
+                            <button type="button" className="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                        <form>
+
+                            <div className="modal-body">
+                                <div className="form-group">
+                                    <label form="name" className="control-label">Le nom</label>
+                                    <input type="text" name="name" id="name" value={this.state.name} className="form-control" onChange={this.handleName}/> 
+                                </div>
+                                <div className="form-group">
+                                    <label from="description" className="control-label">La description</label>
+                                    <textarea onChange={this.handleDescription} name="desciption" id="desciption" className="form-control" value={this.state.description}></textarea>
+                                </div>
+                            </div>
+                            <div className="modal-footer">
+                                <button type="button"  className="btn btn-outline-success" onClick={this.handleEdit.bind(this)}>Modifier</button>
+                                <button type="button" className="btn btn-outline-secondary" data-dismiss="modal">Annuler</button>
+                            </div>
+                        </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        )
+    }
+}
+class Profile extends React.Component{
+    constructor(props){
+        super(props)
+    }
+    render(){
+        return (
+            <div>
+                <div className="row">
+                    <div className="col-md-8">
+                        <div className="card card-light">
+                            <h4 className="card-header">Completer votre profile</h4>
+                            <div className="card-body">
+                                <form>
+                                    <div className="form-group">
+                                        <label className="control-label">Prénom</label>
+                                        <input type="text" id="first_name" className="form-control"/>
+                                    </div>
+                                    <div className="form-group">
+                                        <label className="control-label">Nom de famille</label>
+                                        <input type="text" id="last_name" className="form-control"/>
+                                    </div>
+                                    <div className="form-group">
+                                        <label className="control-label">Votre CV</label>
+                                        <textarea className="form-control" name="cv" ></textarea>
+                                    </div>
+                                    <div className="form-group">
+                                        <button className="btn btn-outline-success">je completer mon profile</button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
         )
     }
 }
+
+
+
 const App = () => {
     return (
         <BrowserRouter>
             <Switch>
-            <Route path='/' exact component={Home}/>
-            <Route path='/offres' exact component={Offers}/>
-            <Route path='/entreprise' exact component={Enterprise}/>
+                <Route path='/' exact component={Home}/>
+                <Route path='/offres' exact component={Offers}/>
+                <Route path='/entreprise' exact component={Enterprise}/>
+                <Route path='/profile' exact component={Profile}/>
             </Switch>
         </BrowserRouter>
     )

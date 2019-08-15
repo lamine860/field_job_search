@@ -2,7 +2,7 @@ from flask import Blueprint, render_template, request, redirect, url_for, flash,
 from flask_jwt_extended import (create_access_token, get_jwt_identity, jwt_required)
 
 from .forms import RegistrationForm, LoginForm
-from field_job_search.models import User
+from field_job_search.models import User, Enterprise, JobSeeker
 from field_job_search import db, bcrypt
 users = Blueprint('users', __name__)
 
@@ -17,6 +17,12 @@ def register():
         user = User(username=form.username.data, email=form.email.data,
          account_type=form.account_type.data, password=hashed_password)
         db.session.add(user)
+        if form.account_type.data == 'entreprises':
+            enterprise = Enterprise(name=form.enterprise_name.data)
+            enterprise.user = user
+            db.session.add(enterprise)
+
+
         db.session.commit()
         flash('Votre compte a bien été crée!', 'success')
         return redirect(url_for('users.login'))
