@@ -8,25 +8,30 @@
             <div class="collapse navbar-collapse" id="navbarSupportedContent">
               <ul class="navbar-nav mr-auto">
                 <li class="nav-item">
-                  <a class="nav-link" href="/offres">Les Offres d'emploi</a>
+                  <a class="nav-link" href="/offres">offres d'emploi</a>
                 </li>
                 {% if current_user.is_enterprise_account() %}
                   <li class="nav-item">
-                    <a class="nav-link" href="/entreprise">Ajouter une offre</a>
+                    <a class="nav-link" href="/entreprise">ajouter une offre</a>
                   </li>
                 {% endif %}
               </ul>
               <ul class="navbar-nav ml-auto">
                 {% if current_user.is_authenticated() %}
+                  {% if current_user.is_jobseeker_account() %}
+                    <il class="nav-item">
+                      <a href="/profile" class="nav-link">profile</a>
+                    </il>
+                  {% endif %}
                   <il class="nav-item">
-                    <a href="{{ url_for('users.logout') }}" class="nav-link">Deconnexion</a>
+                    <a href="{{ url_for('users.logout') }}" class="nav-link">deconnexion</a>
                   </il>
                 {% else %}
                 <li class="nav-item">
-                  <a class="nav-link" href="/connexion">Connexion</a>
+                  <a class="nav-link" href="/connexion">connexion</a>
                 </li>
                 <li class="nav-item">
-                  <a class="nav-link" href="/inscription">Inscription</a>
+                  <a class="nav-link" href="/inscription">inscription</a>
                 </li>
                 {% endif %}
               </ul>

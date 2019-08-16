@@ -1,6 +1,8 @@
-from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify, session, g
-from flask_jwt_extended import (create_access_token, get_jwt_identity, jwt_required)
-
+import os
+import secrets
+from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify, session, g, abort
+#from flask_jwt_extended import (create_access_token, get_jwt_identity, jwt_required)
+from field_job_search import app
 from .forms import RegistrationForm, LoginForm
 from field_job_search.models import User, Enterprise, JobSeeker
 from field_job_search import db, bcrypt
@@ -46,6 +48,44 @@ def logout():
     session.clear()
     return redirect(url_for('main.home'))
 
+@users.route('/profile/update', methods=['POST'])
+def update_profile():
+    if  session.get('user_id'):
+        first_name = request.form.get('first_name')
+        last_name = request.form.get('last_name')
+        if len(first_name) < 2 or len(last_name) < 2:
+            return jsonify({'error': 'Errorr'}), 422
+        path = ''
+        if request.files.get('cv'):
+            file = request.files['cv']
+            ext_file = file.filename.rsplit('.', 1)[1]
+            path = os.path.join(app.root_path, 'static/cv/' + secrets.token_hex(5) +'.'+ ext_file)
+            file.save(path)
+        user = User.query.get(session.get('user_id'))
+        if user.jobseeker:
+            jobseeker = JobSeeker.query.filter_by(user=user).first()
+            jobseeker.first_name = first_name
+            jobseeker.last_name = last_name,
+            jobseeker.cv = path
+        else:
+            jobseeker = JobSeeker(first_name=first_name, last_name=last_name, cv=path)
+            jobseeker.user = user
+            db.session.add(jobseeker)
+        db.session.commit()
+        return jsonify(jobseeker.toJson())
+    return jsonify({'error': 'Errorr'}), 403 
+
+
+@users.route('/profile/info')
+def profile():
+    if session.get('user_id'):
+        user = User.query.get(session.get('user_id'))
+        if  user.jobseeker is not None:
+            jobseeker = user.jobseeker.toJson()
+        else:
+            jobseeker = {}
+        return jsonify({'user': user.toJson(), 'profile': jobseeker})
+    return jsonify({'error': 'Errorr'}), 403      
 
 # @users.route('/auth', methods=['GET', 'POST'])
 # def access_token():

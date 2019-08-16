@@ -541,12 +541,133 @@ var Profile = function (_React$Component3) {
     function Profile(props) {
         _classCallCheck(this, Profile);
 
-        return _possibleConstructorReturn(this, (Profile.__proto__ || Object.getPrototypeOf(Profile)).call(this, props));
+        var _this9 = _possibleConstructorReturn(this, (Profile.__proto__ || Object.getPrototypeOf(Profile)).call(this, props));
+
+        _this9.state = {
+            first_name: '',
+            last_name: '',
+            cv_file: '',
+            user: {},
+            profile: {}
+
+        };
+        _this9.handleFirstName = _this9.handleFirstName.bind(_this9);
+        _this9.handleLastName = _this9.handleLastName.bind(_this9);
+        _this9.handleCv = _this9.handleCv.bind(_this9);
+        _this9.handleSubmit = _this9.handleSubmit.bind(_this9);
+
+        return _this9;
     }
 
     _createClass(Profile, [{
+        key: "handleFirstName",
+        value: function handleFirstName(e) {
+            this.setState({
+                first_name: e.target.value
+            });
+        }
+    }, {
+        key: "handleLastName",
+        value: function handleLastName(e) {
+            this.setState({
+                last_name: e.target.value
+            });
+        }
+    }, {
+        key: "handleCv",
+        value: function handleCv(e) {
+            this.setState({
+                cv_file: e.target.files[0]
+            });
+        }
+    }, {
+        key: "handleSubmit",
+        value: function handleSubmit(e) {
+            var _this10 = this;
+
+            e.preventDefault();
+            var formData = new FormData();
+            formData.append('cv', this.state.cv_file);
+            formData.append('first_name', this.state.first_name);
+            formData.append('last_name', this.state.last_name);
+            fetch('/profile/update', {
+                method: 'POST',
+                body: formData
+            }).then(function (res) {
+                if (res.ok) {
+                    res.json().then(function (res) {
+                        _this10.loadProfile();
+                    });
+                } else {
+                    console.log(res);
+                }
+            });
+            this.setState({
+                first_name: '',
+                last_name: '',
+                cv_file: '',
+                profile: {}
+            });
+        }
+    }, {
+        key: "loadProfile",
+        value: function loadProfile() {
+            var _this11 = this;
+
+            fetch('/profile/info').then(function (res) {
+                res.json().then(function (res) {
+
+                    _this11.setState({
+                        user: res.user,
+                        profile: res.profile,
+                        first_name: res.profile.first_name,
+                        last_name: res.profile.last_name
+                    });
+                });
+            });
+        }
+    }, {
+        key: "componentDidMount",
+        value: function componentDidMount() {
+            this.loadProfile();
+        }
+    }, {
         key: "render",
         value: function render() {
+            var content = this.state.profile || {};
+            var createMarkup = function createMarkup() {
+                return { __html: content.cv_content };
+            };
+            var userInfo = React.createElement(
+                "div",
+                { className: "content-section mt-3" },
+                React.createElement(
+                    "div",
+                    { className: "media" },
+                    React.createElement(
+                        "div",
+                        { className: "media-body" },
+                        React.createElement(
+                            "h5",
+                            { className: "mt-0" },
+                            this.state.user.email
+                        ),
+                        React.createElement(
+                            "span",
+                            { className: "text-small" },
+                            this.state.user.username
+                        ),
+                        React.createElement("div", { className: "border-bottom" }),
+                        React.createElement(
+                            "div",
+                            null,
+                            this.state.profile.first_name,
+                            " ",
+                            this.state.profile.last_name
+                        )
+                    )
+                )
+            );
             return React.createElement(
                 "div",
                 null,
@@ -556,6 +677,11 @@ var Profile = function (_React$Component3) {
                     React.createElement(
                         "div",
                         { className: "col-md-8" },
+                        React.createElement("div", { dangerouslySetInnerHTML: createMarkup() })
+                    ),
+                    React.createElement(
+                        "div",
+                        { className: "col-md-4" },
                         React.createElement(
                             "div",
                             { className: "card card-light" },
@@ -569,7 +695,7 @@ var Profile = function (_React$Component3) {
                                 { className: "card-body" },
                                 React.createElement(
                                     "form",
-                                    null,
+                                    { encType: "multipart/form-data" },
                                     React.createElement(
                                         "div",
                                         { className: "form-group" },
@@ -578,7 +704,7 @@ var Profile = function (_React$Component3) {
                                             { className: "control-label" },
                                             "Pr\xE9nom"
                                         ),
-                                        React.createElement("input", { type: "text", id: "first_name", className: "form-control" })
+                                        React.createElement("input", { onChange: this.handleFirstName, type: "text", id: "first_name", value: this.state.first_name, className: "form-control" })
                                     ),
                                     React.createElement(
                                         "div",
@@ -588,30 +714,35 @@ var Profile = function (_React$Component3) {
                                             { className: "control-label" },
                                             "Nom de famille"
                                         ),
-                                        React.createElement("input", { type: "text", id: "last_name", className: "form-control" })
+                                        React.createElement("input", { onChange: this.handleLastName, type: "text", id: "last_name", value: this.state.last_name, className: "form-control" })
                                     ),
                                     React.createElement(
                                         "div",
                                         { className: "form-group" },
                                         React.createElement(
-                                            "label",
-                                            { className: "control-label" },
-                                            "Votre CV"
-                                        ),
-                                        React.createElement("textarea", { className: "form-control", name: "cv" })
+                                            "div",
+                                            { className: "custom-file " },
+                                            React.createElement("input", { onChange: this.handleCv, type: "file", className: "custom-file-input", id: "customFile" }),
+                                            React.createElement(
+                                                "label",
+                                                { className: "custom-file-label", htmlFor: "customFile" },
+                                                "Choose file"
+                                            )
+                                        )
                                     ),
                                     React.createElement(
                                         "div",
                                         { className: "form-group" },
                                         React.createElement(
                                             "button",
-                                            { className: "btn btn-outline-success" },
+                                            { onClick: this.handleSubmit, className: "btn btn-outline-success" },
                                             "je completer mon profile"
                                         )
                                     )
                                 )
                             )
-                        )
+                        ),
+                        userInfo
                     )
                 )
             );
