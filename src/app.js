@@ -223,8 +223,7 @@ class Enterprise extends React.Component {
             name: offer.name,
             description: offer.description
         })
-        $('.modal').modal()
-        $('#form-create').hide()
+        $('#modal-edit').modal()
     }
     handleModalTd(id){
         $('#modal-td' + id).modal()
@@ -340,7 +339,7 @@ class Enterprise extends React.Component {
                         </div>
                     </div>
                 </div>
-                <div className="modal" tabIndex="-1" role="dialog">
+                <div className="modal" id="modal-edit" tabIndex="-1" role="dialog">
                     <div className="modal-dialog" role="document">
                         <div className="modal-content">
                         <div className="modal-header">

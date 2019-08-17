@@ -350,8 +350,7 @@ var Enterprise = function (_React$Component2) {
                 name: offer.name,
                 description: offer.description
             });
-            $('.modal').modal();
-            $('#form-create').hide();
+            $('#modal-edit').modal();
         }
     }, {
         key: "handleModalTd",
@@ -622,7 +621,7 @@ var Enterprise = function (_React$Component2) {
                 ),
                 React.createElement(
                     "div",
-                    { className: "modal", tabIndex: "-1", role: "dialog" },
+                    { className: "modal", id: "modal-edit", tabIndex: "-1", role: "dialog" },
                     React.createElement(
                         "div",
                         { className: "modal-dialog", role: "document" },
