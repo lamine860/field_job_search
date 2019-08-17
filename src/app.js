@@ -479,6 +479,7 @@ class Profile extends React.Component{
             <div>
                 <div className="row">
                     <div className="col-md-8">
+                        <h4 className="border-bottom">CV</h4>
                     <div dangerouslySetInnerHTML={createMarkup() } /> 
                     </div>
                     <div className="col-md-4">
@@ -514,8 +515,24 @@ class Profile extends React.Component{
 }
 
 
+const Favorite = () => {
+    return (
+        <div>
+            <h1>Page non disponible pour le moment!</h1>
+        </div>
+    )
+}
 
+const Notification = () => {
+    return (
+        <div>
+            <h1>Page non disponible pour le moment!</h1>
+        </div>
+    )
+}
 const App = () => {
+
+
     return (
         <BrowserRouter>
             <Switch>
@@ -523,6 +540,8 @@ const App = () => {
                 <Route path='/offres' exact component={Offers}/>
                 <Route path='/entreprise' exact component={Enterprise}/>
                 <Route path='/profile' exact component={Profile}/>
+                <Route path='/offres/favorites' exact component={Favorite}/>
+                <Route path='/notifications' exact component={Notification}/>
             </Switch>
         </BrowserRouter>
     )

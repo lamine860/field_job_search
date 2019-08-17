@@ -848,6 +848,11 @@ var Profile = function (_React$Component3) {
                     React.createElement(
                         "div",
                         { className: "col-md-8" },
+                        React.createElement(
+                            "h4",
+                            { className: "border-bottom" },
+                            "CV"
+                        ),
                         React.createElement("div", { dangerouslySetInnerHTML: createMarkup() })
                     ),
                     React.createElement(
@@ -919,7 +924,31 @@ var Profile = function (_React$Component3) {
     return Profile;
 }(React.Component);
 
+var Favorite = function Favorite() {
+    return React.createElement(
+        "div",
+        null,
+        React.createElement(
+            "h1",
+            null,
+            "Page non disponible pour le moment!"
+        )
+    );
+};
+
+var Notification = function Notification() {
+    return React.createElement(
+        "div",
+        null,
+        React.createElement(
+            "h1",
+            null,
+            "Page non disponible pour le moment!"
+        )
+    );
+};
 var App = function App() {
+
     return React.createElement(
         BrowserRouter,
         null,
@@ -929,7 +958,9 @@ var App = function App() {
             React.createElement(Route, { path: "/", exact: true, component: Home }),
             React.createElement(Route, { path: "/offres", exact: true, component: Offers }),
             React.createElement(Route, { path: "/entreprise", exact: true, component: Enterprise }),
-            React.createElement(Route, { path: "/profile", exact: true, component: Profile })
+            React.createElement(Route, { path: "/profile", exact: true, component: Profile }),
+            React.createElement(Route, { path: "/offres/favorites", exact: true, component: Favorite }),
+            React.createElement(Route, { path: "/notifications", exact: true, component: Notification })
         )
     );
 };

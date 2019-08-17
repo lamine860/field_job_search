@@ -7,11 +7,11 @@
           
             <div class="collapse navbar-collapse" id="navbarSupportedContent">
               <ul class="navbar-nav mr-auto">
-                <li class="nav-item">
+                <li class="nav-item" id="offres">
                   <a class="nav-link" href="/offres">toutes les offres</a>
                 </li>
                 {% if current_user.is_enterprise_account() %}
-                  <li class="nav-item">
+                  <li class="nav-item " id="entreprise">
                     <a class="nav-link" href="/entreprise">géstion</a>
                   </li>
                 {% endif %}
@@ -19,24 +19,25 @@
               <ul class="navbar-nav ml-auto">
                 {% if current_user.is_authenticated() %}
                   {% if current_user.is_jobseeker_account() %}
+                    
                     <il class="nav-item">
+                      <a href="/offres/favorites" id="offres/favorites" class="nav-link"> favorites</a>
+                    </il>
+                    <il class="nav-item" id="notifications">
+                      <a href="/notifications"  class="nav-link">notifications</a>
+                    </il>
+                    <il class="nav-item" id="profile" >
                       <a href="/profile" class="nav-link">profile</a>
-                    </il>
-                    <il class="nav-item">
-                      <a href="/offres/favorites" class="nav-link">offres favorites</a>
-                    </il>
-                    <il class="nav-item">
-                      <a href="/notifications" class="nav-link">notifications</a>
                     </il>
                   {% endif %}
                   <il class="nav-item">
                     <a href="{{ url_for('users.logout') }}" class="nav-link">deconnexion</a>
                   </il>
                 {% else %}
-                <li class="nav-item">
-                  <a class="nav-link" href="/connexion">connexion</a>
+                <li class="nav-item" id="connexion">
+                  <a class="nav-link"  href="connexion">connexion</a>
                 </li>
-                <li class="nav-item">
+                <li class="nav-item" id="inscription">
                   <a class="nav-link" href="/inscription">inscription</a>
                 </li>
                 {% endif %}

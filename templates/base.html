@@ -9,7 +9,7 @@
     {% else %}
         <title>Field Job</title>
     {% endif %}
-    <!-- <link href="https://fonts.googleapis.com/css?family=Sniglet&display=swap" rel="stylesheet"> -->
+    <link href="https://fonts.googleapis.com/css?family=Sniglet&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
@@ -29,6 +29,14 @@
     <script crossorigin src="{{ url_for('static', filename='js/react.development.js') }}"></script>
     <script crossorigin src="{{ url_for('static', filename='js/react-dom.development.js') }}"></script>
     <script src="{{ url_for('static', filename='js/react-router-dom.min.js') }}"></script>
+    <script>
+        let path  = location.pathname
+        path = path.replace('/', '')
+        console.log(path)
+        if(path){
+            document.getElementById(path).classList.add('active')
+         }
+    </script>
     {% block javascript %}{% endblock javascript %}
 </body>
 </html>
