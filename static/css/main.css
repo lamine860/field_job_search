@@ -17,13 +17,14 @@ body
     border-radius: 5px;
 }
 
-.btn.btn-outline-success {
-    color: #22A799;
+.btn.btn-outline-success , .btn.btn-success{
+    background-color: #22A799;
     border-color: #22A799!important;
+    color: white;
 }
 
 
-.btn.btn-outline-success:hover{
-    color: #F2F2F2;
-    background-color: #22A799!important;
+.btn.btn-outline-success:hover, .btn.btn-success:hover{
+    background-color: #22A7CC!important;
+    color: white;
 }

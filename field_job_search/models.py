@@ -1,3 +1,4 @@
+from flask import session
 import enum
 import datetime
 from flask import session
@@ -17,6 +18,8 @@ class User(db.Model):
     password = db.Column(db.String(60), nullable=False, unique=True)
     enterprise = db.relationship('Enterprise', back_populates='user', uselist=False)
     job_seeker = db.relationship('JobSeeker', back_populates='user', uselist=False)
+
+
 
     def is_authenticated(self):
         return self.id == session.get('user_id')
@@ -60,6 +63,10 @@ class Enterprise(db.Model):
             offers.append(offer.toJson())
         return {'id': self.id, 'name': self.name, 'offers': offers}
 
+offer_job_seeker = db.Table('tags',
+    db.Column('offer_id', db.Integer, db.ForeignKey('offers.id'), primary_key=True),
+    db.Column('jobseeker_id', db.Integer, db.ForeignKey('job_seekers.id'), primary_key=True)
+)
 
 
 class Offer(db.Model):
@@ -70,17 +77,34 @@ class Offer(db.Model):
     date_posted = db.Column(db.Date(), nullable=False, default=datetime.date.today())
     enterprise_id = db.Column(db.Integer, db.ForeignKey('enterprises.id'))
     enterprise = db.relationship('Enterprise', back_populates='offers')
+    jobseekers = db.relationship('JobSeeker', secondary=offer_job_seeker, lazy='subquery', backref=db.backref('offers', lazy=True))
 
     def __repr__(self):
         return f'Offer {self.id} -- {self.name}'
 
-    
+    def ollow(self):
+        user_id = session.get('user_id')
+        if not user_id:
+            return False
+        Jobseeker = User.query.get(user_id).jobseeker
+        if Jobseeker:
+            return Jobseeker not in self.jobseekers
+        return False    
+
+
     def toJson(self):
+        jobseekers = self.jobseekers
+        if not jobseekers:
+            jobseekers = []
+        count = len(jobseekers)
+        js = []
+        for j in jobseekers:
+            js.append(j.toJson())
         return {
     'id': self.id, 'name': self.name, 
     'description': self.description,
     'date_posted': self.date_posted.strftime('%d/%m/%Y'),
-    'enterprise': self.enterprise.name
+    'enterprise': self.enterprise.name, 'apply': count, 'ollow': self.ollow(), 'jobseekers': js
      }
 
 
@@ -94,14 +118,15 @@ class JobSeeker(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
     user = db.relationship('User', backref=db.backref('jobseeker', uselist=False))
     
+
+
     def __repr__(self):
         return f'Job Seeker {self.id} -- {self.first_name} {self.last_name}'
         
     def toJson(self):
-        content = pypandoc.convert_file(self.cv, 'html')
+        content = ''
+        if self.cv:
+            content = ''
         return { 'id': self.id, 'first_name': self.first_name, 'last_name': self.last_name, 'cv': self.cv, 'cv_content': content}    
 
 
-
-
-db.create_all()

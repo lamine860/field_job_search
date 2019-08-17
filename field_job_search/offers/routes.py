@@ -10,14 +10,15 @@ offers = Blueprint('offers', __name__, url_prefix='/offres')
 @offers.route('list')
 def offers_list():
     result = []
-    for offer in Offer.query.order_by(Offer.date_posted.desc()):
-        result.append(offer.toJson())
-    if(session.get('user_id')):
-        user = User.query.get(session.get('user_id'))
-        ollowed = user.is_jobseeker_account() and user.has_complete_profile()
+    query = request.args.get('q')
+    if query:
+        query = f'{query}%'
+        for offer in Offer.query.filter(Offer.name.like(query)):
+            result.append(offer.toJson())
     else:
-        ollowed = False     
-    return jsonify({'offers': result, 'ollowed': ollowed})
+        for offer in Offer.query.order_by(Offer.date_posted.desc()):
+            result.append(offer.toJson())
+    return jsonify({'offers': result })
 
 @offers.route('/enterprise')
 def offers_by_enterprise():
@@ -71,5 +72,15 @@ def apply_for(id):
     if not session.get('user_id'):
         abort(403)
     offer = Offer.query.get(id)
+    user = User.query.get(session.get('user_id'))
+    jobseeker = user.jobseeker
+    if offer and jobseeker not in offer.jobseekers:
+        offer.jobseekers.append(jobseeker)
+        # db.session.commit()
+        return jsonify(offer.toJson())
+    else:
+        return jsonify({'success': False})
+    return  abort(403)
 
-    return jsonify(2)
+
+    

@@ -26,32 +26,57 @@ class Offers extends React.Component{
         super(props)
         this.state = {
             offers:[],
-            ollowed: false
         }
+        this.handleSeach = this.handleSeach.bind(this)
     }
     apply(e, offer_id){
         e.preventDefault()
         fetch('/offres/'+ offer_id +'/postul').then(res => {
-            console.log(res.ok)
+            if(res.ok){
+                res.json().then(offer => {
+                    current_offer = this.state.offers.filter(offer => offer.id != offer_id)
+                    this.setState(state => {
+                        return {
+                            offers: [offer, ...current_offer]
+                        }
+                    })
+                })
+            }
         })
     }
-    componentDidMount(){
-        fetch('/offres/list', {
+    fetchOffers(url){
+        fetch(url, {
 
         }).then(res => {
             res.json().then(res => {
                 this.setState({
                     offers: res.offers,
-                    ollowed: res.ollowed
                 })
             })
         })
+    }
+    componentDidMount(){
+        this.fetchOffers('/offres/list')
+    }
+
+    handleSeach(e){
+        e.preventDefault()
+        let q = e.target.value
+        if(!q){
+            this.fetchOffers('/offres/list')
+        }
+        if(q.length > 4){
+            this.fetchOffers('/offres/list?q=' + q)
+        }
+
     }
 
     render()
     {
         const html = this.state.offers.map((offer) => {
-            let link = this.state.ollowed ? <a onClick={(e) => this.apply(e, offer.id)} href={ '/offers/' + offer.id + '/postuler'} className="btn btn-link">Postuler directement</a> : '' 
+            const mark = (<a href="" className="ml-auto btn btn-success">Ajouter à la favorite<i className="fa fa-star"></i></a>)
+            const link = offer.ollow ? <a onClick={(e) => this.apply(e, offer.id)} href={ '/offers/' + offer.id + '/postuler'} 
+            className="btn btn-success">Postuler directement</a> : ''
             return (
                 <div className="card mb-2" key={offer.id}>
                 <div className="card-body">
@@ -59,13 +84,26 @@ class Offers extends React.Component{
                     Depuis le <small className="text-muted">{ offer.date_posted }</small>&nbsp;&nbsp;&nbsp;
                     <strong>{ offer.enterprise }</strong>
                     <p className="card-text">{ offer.description }</p>
-                    {link}
+                    <div className="d-flex">
+                        {link}
+                        {mark}
+                    </div>
                 </div>
             </div>
             )
         })
+        let style = {
+            width: "80%",
+            paddding: "50px"
+        }
         return (
             <div>
+                <div className="jumbotron" onSubmit={(e) => e.preventDefault() }>
+                    <form className="form-inline">
+                        <input className="form-control py-2" onInput={ this.handleSeach } style={style} type="search" placeholder="Métier, Mots cles" aria-label="Search" />
+                        <button className="btn btn-outline-success my-3 px-5" type="submit"><i className="fa fa-search"></i></button>
+                    </form>
+                </div>
                 <h4 className="text-muted">{this.state.offers.length } offres corespondent à votre recherche</h4>
                 {html}
             </div>
@@ -81,7 +119,8 @@ class Enterprise extends React.Component {
             name: '',
             description: '',
             offers: [],
-            alertMessage: ''
+            alertMessage: '',
+            jobseekers: []
 
         }
         
@@ -187,22 +226,63 @@ class Enterprise extends React.Component {
         $('.modal').modal()
         $('#form-create').hide()
     }
+    handleModalTd(id){
+        $('#modal-td' + id).modal()
+    }
     componentDidMount() {
         fetch('/offres/enterprise').then(res => {
-            res.json().then( res => { this.setState({
-                offers: res
+            res.json().then( res => {
+                this.setState({
+                offers: res,
             })})
         })
     }
     render(){
         let list_body = this.state.offers.map(offer => {
+            function  createMarkup(){
+                return {__html: seekerHtml}
+            }
+            let jobseekers = offer.jobseekers.map((js, i) => {
+                return (
+                    <div key={i} className="media">
+                        <div className="media-body">
+                            <h5 className="mt-0">{js.first_name + ' ' + js.last_name}</h5>
+                            <p>{js.cv}</p>
+                            <button className="btn btn-success btn-sm">accepter la demande</button>
+                        </div>
+                    </div>
+                )
+            })
+            let id = 'modal-td' + offer.id
             return (
+                
                 <tr key={offer.id} data-id={offer.id}>
                     <td>#{offer.id}</td>
                     <td>{offer.name}</td>
+                    <td>{offer.apply} <button onClick={() => this.handleModalTd(offer.id) } className="btn btn-success">cliquer ici</button></td>
                     <td>
                         <button onClick={ () => this.showModal(offer)} className="btn btn-warning btn-sm">modifier</button> &nbsp;
                         <button onClick={() => this.handleDelete(offer)} className="btn btn-danger btn-sm">suprimer</button>
+
+                        <div  className="modal fade" id={id}  tabIndex="-1" role="dialog" aria-labelledby="exampleModalLongTitle" aria-hidden="true">
+                        <div className="modal-dialog" role="document">
+                            <div className="modal-content">
+                            <div className="modal-header">
+                                <h5 className="modal-title" id="exampleModalLongTitle">{offer.name }</h5>
+                                <button type="button" className="close" data-dismiss="modal" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                                </button>
+                            </div>
+                            <div className="modal-body" key={offer.id}>
+                                {jobseekers}
+                            </div>
+                            <div className="modal-footer">
+                                <button type="button" className="btn btn-secondary" data-dismiss="modal">Close</button>
+                            </div>
+                            </div>
+                        </div>
+                        </div>
+
                     </td>
                 </tr>
             )
@@ -214,15 +294,20 @@ class Enterprise extends React.Component {
                         </button>
                     </div>
         let alertMessage = this.state.alertMessage ? alert : ''
+        
         return (
             <div>
                 <div className="row">
-                    <div className="col-md-8">
+                    <div className="col-md-12">
+                        <h3 className="text-center">Géstion des offres</h3>
                         <table className="table table-striped">
                             <thead>
                                 <tr>
                                     <th>#Identifient</th>
                                     <th>Nom</th>
+                                    <th>
+                                        voire les demandeurs
+                                    </th>
                                     <th>Action</th>
                                 </tr>
                             </thead>
@@ -231,9 +316,9 @@ class Enterprise extends React.Component {
                             </tbody>
                         </table>
                     </div>
-                    <div className="col-md-4">
+                    <div className="col-md-12">
                         <div className="card">
-                            <h4 className="card-header">Ajouter Une Nouvelle Offer</h4>
+                            <h4 className="card-header text-center">Ajouter une nouvelle offre</h4>
                             <div className="card-body">
                                 {
                                    alertMessage
@@ -254,9 +339,7 @@ class Enterprise extends React.Component {
                             </div>
                         </div>
                     </div>
-                    
                 </div>
-
                 <div className="modal" tabIndex="-1" role="dialog">
                     <div className="modal-dialog" role="document">
                         <div className="modal-content">
@@ -267,7 +350,6 @@ class Enterprise extends React.Component {
                             </button>
                         </div>
                         <form>
-
                             <div className="modal-body">
                                 <div className="form-group">
                                     <label form="name" className="control-label">Le nom</label>
@@ -297,7 +379,7 @@ class Profile extends React.Component{
         this.state = {
             first_name: '',
             last_name: '',
-            cv_file: '',
+            cv: '',
             user: {},
             profile:{},
 
@@ -323,13 +405,13 @@ class Profile extends React.Component{
 
     handleCv(e){
         this.setState({
-            cv_file:e.target.files[0],
+           cv: e.target.value
         })
     }
     handleSubmit(e){
         e.preventDefault()
         let formData = new FormData()
-        formData.append('cv', this.state.cv_file)
+        formData.append('cv', this.state.cv)
         formData.append('first_name',this.state.first_name)
         formData.append('last_name', this.state.last_name)
         fetch('/profile/update', {
@@ -341,14 +423,13 @@ class Profile extends React.Component{
                     this.loadProfile()
                 })
             }else{
-                console.log(res)
             }
             
         })
         this.setState({
             first_name: '',
             last_name: '',
-            cv_file: '',
+            cv: '',
             profile: {}
         })
 
@@ -361,7 +442,8 @@ class Profile extends React.Component{
                     user:res.user,
                     profile: res.profile,
                     first_name: res.profile.first_name,
-                    last_name: res.profile.last_name
+                    last_name: res.profile.last_name,
+                    cv: res.profile.cv
                 })
             })
         })
@@ -371,7 +453,7 @@ class Profile extends React.Component{
     }
     render(){
         let content = this.state.profile || {}
-        let createMarkup = function () { return {__html: content.cv_content }}
+        let createMarkup = function () { return {__html: content.cv }}
         let userInfo  = (
             <div className="content-section mt-3">
                 <div className="media">
@@ -404,10 +486,9 @@ class Profile extends React.Component{
                                         <input onChange={this.handleLastName} type="text" id="last_name" value={this.state.last_name} className="form-control"/>
                                     </div>
                                     <div className="form-group">
-                                    <div className="custom-file ">
-                                        <input onChange={this.handleCv } type="file" className="custom-file-input" id="customFile"/>
-                                        <label className="custom-file-label" htmlFor="customFile">Choose file</label>
-                                    </div>
+
+                                        <label  className="control-label">Votre CV</label>
+                                        <textarea onChange={this.handleCv} className="form-control" value={this.state.cv}></textarea>
                                     </div>
                                     <div className="form-group">
                                         <button onClick={this.handleSubmit} className="btn btn-outline-success">je completer mon profile</button>

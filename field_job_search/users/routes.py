@@ -53,22 +53,17 @@ def update_profile():
     if  session.get('user_id'):
         first_name = request.form.get('first_name')
         last_name = request.form.get('last_name')
+        cv = request.form.get('cv')
         if len(first_name) < 2 or len(last_name) < 2:
             return jsonify({'error': 'Errorr'}), 422
-        path = ''
-        if request.files.get('cv'):
-            file = request.files['cv']
-            ext_file = file.filename.rsplit('.', 1)[1]
-            path = os.path.join(app.root_path, 'static/cv/' + secrets.token_hex(5) +'.'+ ext_file)
-            file.save(path)
         user = User.query.get(session.get('user_id'))
         if user.jobseeker:
             jobseeker = JobSeeker.query.filter_by(user=user).first()
             jobseeker.first_name = first_name
             jobseeker.last_name = last_name,
-            jobseeker.cv = path
+            jobseeker.cv = cv
         else:
-            jobseeker = JobSeeker(first_name=first_name, last_name=last_name, cv=path)
+            jobseeker = JobSeeker(first_name=first_name, last_name=last_name, cv=cv)
             jobseeker.user = user
             db.session.add(jobseeker)
         db.session.commit()

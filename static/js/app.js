@@ -71,45 +71,81 @@ var Offers = function (_React$Component) {
         var _this = _possibleConstructorReturn(this, (Offers.__proto__ || Object.getPrototypeOf(Offers)).call(this, props));
 
         _this.state = {
-            offers: [],
-            ollowed: false
+            offers: []
         };
+        _this.handleSeach = _this.handleSeach.bind(_this);
         return _this;
     }
 
     _createClass(Offers, [{
         key: "apply",
         value: function apply(e, offer_id) {
+            var _this2 = this;
+
             e.preventDefault();
             fetch('/offres/' + offer_id + '/postul').then(function (res) {
-                console.log(res.ok);
+                if (res.ok) {
+                    res.json().then(function (offer) {
+                        current_offer = _this2.state.offers.filter(function (offer) {
+                            return offer.id != offer_id;
+                        });
+                        _this2.setState(function (state) {
+                            return {
+                                offers: [offer].concat(_toConsumableArray(current_offer))
+                            };
+                        });
+                    });
+                }
             });
         }
     }, {
-        key: "componentDidMount",
-        value: function componentDidMount() {
-            var _this2 = this;
+        key: "fetchOffers",
+        value: function fetchOffers(url) {
+            var _this3 = this;
 
-            fetch('/offres/list', {}).then(function (res) {
+            fetch(url, {}).then(function (res) {
                 res.json().then(function (res) {
-                    _this2.setState({
-                        offers: res.offers,
-                        ollowed: res.ollowed
+                    _this3.setState({
+                        offers: res.offers
                     });
                 });
             });
         }
     }, {
+        key: "componentDidMount",
+        value: function componentDidMount() {
+            this.fetchOffers('/offres/list');
+        }
+    }, {
+        key: "handleSeach",
+        value: function handleSeach(e) {
+            e.preventDefault();
+            var q = e.target.value;
+            if (!q) {
+                this.fetchOffers('/offres/list');
+            }
+            if (q.length > 4) {
+                this.fetchOffers('/offres/list?q=' + q);
+            }
+        }
+    }, {
         key: "render",
         value: function render() {
-            var _this3 = this;
+            var _this4 = this;
 
             var html = this.state.offers.map(function (offer) {
-                var link = _this3.state.ollowed ? React.createElement(
+                var mark = React.createElement(
+                    "a",
+                    { href: "", className: "ml-auto btn btn-success" },
+                    "Ajouter \xE0 la favorite",
+                    React.createElement("i", { className: "fa fa-star" })
+                );
+                var link = offer.ollow ? React.createElement(
                     "a",
                     { onClick: function onClick(e) {
-                            return _this3.apply(e, offer.id);
-                        }, href: '/offers/' + offer.id + '/postuler', className: "btn btn-link" },
+                            return _this4.apply(e, offer.id);
+                        }, href: '/offers/' + offer.id + '/postuler',
+                        className: "btn btn-success" },
                     "Postuler directement"
                 ) : '';
                 return React.createElement(
@@ -140,13 +176,38 @@ var Offers = function (_React$Component) {
                             { className: "card-text" },
                             offer.description
                         ),
-                        link
+                        React.createElement(
+                            "div",
+                            { className: "d-flex" },
+                            link,
+                            mark
+                        )
                     )
                 );
             });
+            var style = {
+                width: "80%",
+                paddding: "50px"
+            };
             return React.createElement(
                 "div",
                 null,
+                React.createElement(
+                    "div",
+                    { className: "jumbotron", onSubmit: function onSubmit(e) {
+                            return e.preventDefault();
+                        } },
+                    React.createElement(
+                        "form",
+                        { className: "form-inline" },
+                        React.createElement("input", { className: "form-control py-2", onInput: this.handleSeach, style: style, type: "search", placeholder: "M\xE9tier, Mots cles", "aria-label": "Search" }),
+                        React.createElement(
+                            "button",
+                            { className: "btn btn-outline-success my-3 px-5", type: "submit" },
+                            React.createElement("i", { className: "fa fa-search" })
+                        )
+                    )
+                ),
                 React.createElement(
                     "h4",
                     { className: "text-muted" },
@@ -167,21 +228,21 @@ var Enterprise = function (_React$Component2) {
     function Enterprise(propos) {
         _classCallCheck(this, Enterprise);
 
-        var _this4 = _possibleConstructorReturn(this, (Enterprise.__proto__ || Object.getPrototypeOf(Enterprise)).call(this, propos));
+        var _this5 = _possibleConstructorReturn(this, (Enterprise.__proto__ || Object.getPrototypeOf(Enterprise)).call(this, propos));
 
-        _this4.handleName = function (e) {
-            _this4.setState({
+        _this5.handleName = function (e) {
+            _this5.setState({
                 name: e.target.value
             });
         };
 
-        _this4.handleDescription = function (e) {
-            _this4.setState({
+        _this5.handleDescription = function (e) {
+            _this5.setState({
                 description: e.target.value
             });
         };
 
-        _this4.handleSubmit = function (e) {
+        _this5.handleSubmit = function (e) {
             e.preventDefault();
             fetch('/offres/create', {
                 method: 'POST',
@@ -191,45 +252,46 @@ var Enterprise = function (_React$Component2) {
                     // 'Content-Type': 'application/x-www-form-urlencoded',
                 },
                 body: JSON.stringify({
-                    name: _this4.state.name,
-                    description: _this4.state.description
+                    name: _this5.state.name,
+                    description: _this5.state.description
                 })
             }).then(function (res) {
                 if (res.ok) {
                     res.json().then(function (offer) {
-                        _this4.setState(function (satate) {
+                        _this5.setState(function (satate) {
                             return {
                                 alertMessage: 'L\'offre a bien été ajouter',
-                                offers: [offer].concat(_toConsumableArray(_this4.state.offers))
+                                offers: [offer].concat(_toConsumableArray(_this5.state.offers))
                             };
                         });
                     });
                 } else {
-                    _this4.setState({
+                    _this5.setState({
                         alertMessage: 'Oups! Il se peut que vous n\'avez pas bien remplie les champs.'
                     });
                 }
             });
-            _this4.state.description = '';
-            _this4.state.name = '';
+            _this5.state.description = '';
+            _this5.state.name = '';
         };
 
-        _this4.state = {
+        _this5.state = {
             id: 0,
             name: '',
             description: '',
             offers: [],
-            alertMessage: ''
+            alertMessage: '',
+            jobseekers: []
 
         };
 
-        return _this4;
+        return _this5;
     }
 
     _createClass(Enterprise, [{
         key: "handleEdit",
         value: function handleEdit() {
-            var _this5 = this;
+            var _this6 = this;
 
             fetch('/offres/' + this.state.id + '/edit', {
                 method: 'POST',
@@ -244,7 +306,7 @@ var Enterprise = function (_React$Component2) {
             }).then(function (res) {
                 if (res.ok) {
                     res.json().then(function (offer) {
-                        _this5.setState(function (state) {
+                        _this6.setState(function (state) {
                             var filtred = state.offers.filter(function (f) {
                                 return f.id != offer.id;
                             });
@@ -264,12 +326,12 @@ var Enterprise = function (_React$Component2) {
     }, {
         key: "handleDelete",
         value: function handleDelete(offer) {
-            var _this6 = this;
+            var _this7 = this;
 
             fetch('/offres/' + offer.id + '/delete', {}).then(function (res) {
                 if (res.ok) {
                     res.json().then(function (res) {
-                        _this6.setState(function (state) {
+                        _this7.setState(function (state) {
                             return {
                                 offers: state.offers.filter(function (f) {
                                     return f != offer;
@@ -292,13 +354,18 @@ var Enterprise = function (_React$Component2) {
             $('#form-create').hide();
         }
     }, {
+        key: "handleModalTd",
+        value: function handleModalTd(id) {
+            $('#modal-td' + id).modal();
+        }
+    }, {
         key: "componentDidMount",
         value: function componentDidMount() {
-            var _this7 = this;
+            var _this8 = this;
 
             fetch('/offres/enterprise').then(function (res) {
                 res.json().then(function (res) {
-                    _this7.setState({
+                    _this8.setState({
                         offers: res
                     });
                 });
@@ -307,9 +374,38 @@ var Enterprise = function (_React$Component2) {
     }, {
         key: "render",
         value: function render() {
-            var _this8 = this;
+            var _this9 = this;
 
             var list_body = this.state.offers.map(function (offer) {
+                function createMarkup() {
+                    return { __html: seekerHtml };
+                }
+                var jobseekers = offer.jobseekers.map(function (js, i) {
+                    return React.createElement(
+                        "div",
+                        { key: i, className: "media" },
+                        React.createElement(
+                            "div",
+                            { className: "media-body" },
+                            React.createElement(
+                                "h5",
+                                { className: "mt-0" },
+                                js.first_name + ' ' + js.last_name
+                            ),
+                            React.createElement(
+                                "p",
+                                null,
+                                js.cv
+                            ),
+                            React.createElement(
+                                "button",
+                                { className: "btn btn-success btn-sm" },
+                                "accepter la demande"
+                            )
+                        )
+                    );
+                });
+                var id = 'modal-td' + offer.id;
                 return React.createElement(
                     "tr",
                     { key: offer.id, "data-id": offer.id },
@@ -327,10 +423,23 @@ var Enterprise = function (_React$Component2) {
                     React.createElement(
                         "td",
                         null,
+                        offer.apply,
+                        " ",
                         React.createElement(
                             "button",
                             { onClick: function onClick() {
-                                    return _this8.showModal(offer);
+                                    return _this9.handleModalTd(offer.id);
+                                }, className: "btn btn-success" },
+                            "cliquer ici"
+                        )
+                    ),
+                    React.createElement(
+                        "td",
+                        null,
+                        React.createElement(
+                            "button",
+                            { onClick: function onClick() {
+                                    return _this9.showModal(offer);
                                 }, className: "btn btn-warning btn-sm" },
                             "modifier"
                         ),
@@ -338,9 +447,53 @@ var Enterprise = function (_React$Component2) {
                         React.createElement(
                             "button",
                             { onClick: function onClick() {
-                                    return _this8.handleDelete(offer);
+                                    return _this9.handleDelete(offer);
                                 }, className: "btn btn-danger btn-sm" },
                             "suprimer"
+                        ),
+                        React.createElement(
+                            "div",
+                            { className: "modal fade", id: id, tabIndex: "-1", role: "dialog", "aria-labelledby": "exampleModalLongTitle", "aria-hidden": "true" },
+                            React.createElement(
+                                "div",
+                                { className: "modal-dialog", role: "document" },
+                                React.createElement(
+                                    "div",
+                                    { className: "modal-content" },
+                                    React.createElement(
+                                        "div",
+                                        { className: "modal-header" },
+                                        React.createElement(
+                                            "h5",
+                                            { className: "modal-title", id: "exampleModalLongTitle" },
+                                            offer.name
+                                        ),
+                                        React.createElement(
+                                            "button",
+                                            { type: "button", className: "close", "data-dismiss": "modal", "aria-label": "Close" },
+                                            React.createElement(
+                                                "span",
+                                                { "aria-hidden": "true" },
+                                                "\xD7"
+                                            )
+                                        )
+                                    ),
+                                    React.createElement(
+                                        "div",
+                                        { className: "modal-body", key: offer.id },
+                                        jobseekers
+                                    ),
+                                    React.createElement(
+                                        "div",
+                                        { className: "modal-footer" },
+                                        React.createElement(
+                                            "button",
+                                            { type: "button", className: "btn btn-secondary", "data-dismiss": "modal" },
+                                            "Close"
+                                        )
+                                    )
+                                )
+                            )
                         )
                     )
                 );
@@ -352,7 +505,7 @@ var Enterprise = function (_React$Component2) {
                 React.createElement(
                     "button",
                     { onClick: function onClick() {
-                            return _this8.setState({ alertMessage: '' });
+                            return _this9.setState({ alertMessage: '' });
                         }, type: "button", className: "close", "data-dismiss": "alert", "aria-label": "Close" },
                     React.createElement(
                         "span",
@@ -362,6 +515,7 @@ var Enterprise = function (_React$Component2) {
                 )
             );
             var alertMessage = this.state.alertMessage ? alert : '';
+
             return React.createElement(
                 "div",
                 null,
@@ -370,7 +524,12 @@ var Enterprise = function (_React$Component2) {
                     { className: "row" },
                     React.createElement(
                         "div",
-                        { className: "col-md-8" },
+                        { className: "col-md-12" },
+                        React.createElement(
+                            "h3",
+                            { className: "text-center" },
+                            "G\xE9stion des offres"
+                        ),
                         React.createElement(
                             "table",
                             { className: "table table-striped" },
@@ -393,6 +552,11 @@ var Enterprise = function (_React$Component2) {
                                     React.createElement(
                                         "th",
                                         null,
+                                        "voire les demandeurs"
+                                    ),
+                                    React.createElement(
+                                        "th",
+                                        null,
                                         "Action"
                                     )
                                 )
@@ -406,14 +570,14 @@ var Enterprise = function (_React$Component2) {
                     ),
                     React.createElement(
                         "div",
-                        { className: "col-md-4" },
+                        { className: "col-md-12" },
                         React.createElement(
                             "div",
                             { className: "card" },
                             React.createElement(
                                 "h4",
-                                { className: "card-header" },
-                                "Ajouter Une Nouvelle Offer"
+                                { className: "card-header text-center" },
+                                "Ajouter une nouvelle offre"
                             ),
                             React.createElement(
                                 "div",
@@ -541,22 +705,22 @@ var Profile = function (_React$Component3) {
     function Profile(props) {
         _classCallCheck(this, Profile);
 
-        var _this9 = _possibleConstructorReturn(this, (Profile.__proto__ || Object.getPrototypeOf(Profile)).call(this, props));
+        var _this10 = _possibleConstructorReturn(this, (Profile.__proto__ || Object.getPrototypeOf(Profile)).call(this, props));
 
-        _this9.state = {
+        _this10.state = {
             first_name: '',
             last_name: '',
-            cv_file: '',
+            cv: '',
             user: {},
             profile: {}
 
         };
-        _this9.handleFirstName = _this9.handleFirstName.bind(_this9);
-        _this9.handleLastName = _this9.handleLastName.bind(_this9);
-        _this9.handleCv = _this9.handleCv.bind(_this9);
-        _this9.handleSubmit = _this9.handleSubmit.bind(_this9);
+        _this10.handleFirstName = _this10.handleFirstName.bind(_this10);
+        _this10.handleLastName = _this10.handleLastName.bind(_this10);
+        _this10.handleCv = _this10.handleCv.bind(_this10);
+        _this10.handleSubmit = _this10.handleSubmit.bind(_this10);
 
-        return _this9;
+        return _this10;
     }
 
     _createClass(Profile, [{
@@ -577,17 +741,17 @@ var Profile = function (_React$Component3) {
         key: "handleCv",
         value: function handleCv(e) {
             this.setState({
-                cv_file: e.target.files[0]
+                cv: e.target.value
             });
         }
     }, {
         key: "handleSubmit",
         value: function handleSubmit(e) {
-            var _this10 = this;
+            var _this11 = this;
 
             e.preventDefault();
             var formData = new FormData();
-            formData.append('cv', this.state.cv_file);
+            formData.append('cv', this.state.cv);
             formData.append('first_name', this.state.first_name);
             formData.append('last_name', this.state.last_name);
             fetch('/profile/update', {
@@ -596,32 +760,31 @@ var Profile = function (_React$Component3) {
             }).then(function (res) {
                 if (res.ok) {
                     res.json().then(function (res) {
-                        _this10.loadProfile();
+                        _this11.loadProfile();
                     });
-                } else {
-                    console.log(res);
-                }
+                } else {}
             });
             this.setState({
                 first_name: '',
                 last_name: '',
-                cv_file: '',
+                cv: '',
                 profile: {}
             });
         }
     }, {
         key: "loadProfile",
         value: function loadProfile() {
-            var _this11 = this;
+            var _this12 = this;
 
             fetch('/profile/info').then(function (res) {
                 res.json().then(function (res) {
 
-                    _this11.setState({
+                    _this12.setState({
                         user: res.user,
                         profile: res.profile,
                         first_name: res.profile.first_name,
-                        last_name: res.profile.last_name
+                        last_name: res.profile.last_name,
+                        cv: res.profile.cv
                     });
                 });
             });
@@ -636,7 +799,7 @@ var Profile = function (_React$Component3) {
         value: function render() {
             var content = this.state.profile || {};
             var createMarkup = function createMarkup() {
-                return { __html: content.cv_content };
+                return { __html: content.cv };
             };
             var userInfo = React.createElement(
                 "div",
@@ -720,15 +883,11 @@ var Profile = function (_React$Component3) {
                                         "div",
                                         { className: "form-group" },
                                         React.createElement(
-                                            "div",
-                                            { className: "custom-file " },
-                                            React.createElement("input", { onChange: this.handleCv, type: "file", className: "custom-file-input", id: "customFile" }),
-                                            React.createElement(
-                                                "label",
-                                                { className: "custom-file-label", htmlFor: "customFile" },
-                                                "Choose file"
-                                            )
-                                        )
+                                            "label",
+                                            { className: "control-label" },
+                                            "Votre CV"
+                                        ),
+                                        React.createElement("textarea", { onChange: this.handleCv, className: "form-control", value: this.state.cv })
                                     ),
                                     React.createElement(
                                         "div",
