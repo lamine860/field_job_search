@@ -249,7 +249,6 @@ var Enterprise = function (_React$Component2) {
                 credentials: 'same-origin',
                 headers: {
                     'Content-Type': 'application/json'
-                    // 'Content-Type': 'application/x-www-form-urlencoded',
                 },
                 body: JSON.stringify({
                     name: _this5.state.name,
@@ -280,8 +279,7 @@ var Enterprise = function (_React$Component2) {
             name: '',
             description: '',
             offers: [],
-            alertMessage: '',
-            jobseekers: []
+            alertMessage: ''
 
         };
 
@@ -358,6 +356,15 @@ var Enterprise = function (_React$Component2) {
             $('#modal-td' + id).modal();
         }
     }, {
+        key: "handleAccept",
+        value: function handleAccept(offer_id, js_id) {
+            fetch('/offres/accept?offer_id=' + offer_id + '&jobseeker_id=' + js_id).then(function (res) {
+                if (res.ok) {
+                    res.json().then(function (res) {});
+                }
+            });
+        }
+    }, {
         key: "componentDidMount",
         value: function componentDidMount() {
             var _this8 = this;
@@ -376,38 +383,40 @@ var Enterprise = function (_React$Component2) {
             var _this9 = this;
 
             var list_body = this.state.offers.map(function (offer) {
-                function createMarkup() {
-                    return { __html: seekerHtml };
-                }
-                var jobseekers = offer.jobseekers.map(function (js, i) {
-                    return React.createElement(
-                        "div",
-                        { key: i, className: "media" },
-                        React.createElement(
+                var jobseekers = '';
+                if (offer.jobseekers) {
+                    var _jobseekers = offer.jobseekers.map(function (js) {
+                        function createMarkup2() {
+                            return { __html: js.cv };
+                        }
+                        return React.createElement(
                             "div",
-                            { className: "media-body" },
+                            { key: js.id, className: "media" },
                             React.createElement(
-                                "h5",
-                                { className: "mt-0" },
-                                js.first_name + ' ' + js.last_name
-                            ),
-                            React.createElement(
-                                "p",
-                                null,
-                                js.cv
-                            ),
-                            React.createElement(
-                                "button",
-                                { className: "btn btn-success btn-sm" },
-                                "accepter la demande"
+                                "div",
+                                { className: "media-body" },
+                                React.createElement(
+                                    "h5",
+                                    { className: "mt-0" },
+                                    js.first_name + ' ' + js.last_name
+                                ),
+                                React.createElement("p", { dangerouslySetInnerHTML: createMarkup2() }),
+                                React.createElement(
+                                    "button",
+                                    { className: "btn btn-outline-success btn-sm", onClick: function onClick() {
+                                            return _this9.handleAccept(offer.id, js.id);
+                                        } },
+                                    "accepter la demande"
+                                )
                             )
-                        )
-                    );
-                });
+                        );
+                    });
+                }
+
                 var id = 'modal-td' + offer.id;
                 return React.createElement(
                     "tr",
-                    { key: offer.id, "data-id": offer.id },
+                    { key: offer.id },
                     React.createElement(
                         "td",
                         null,
@@ -884,7 +893,7 @@ var Profile = function (_React$Component3) {
                                         React.createElement(
                                             "label",
                                             { className: "control-label" },
-                                            "Votre CV"
+                                            "Votre CV (HTML)"
                                         ),
                                         React.createElement("textarea", { onChange: this.handleCv, className: "form-control", value: this.state.cv })
                                     ),

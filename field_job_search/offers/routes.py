@@ -1,6 +1,6 @@
 import json
 from flask import Blueprint, render_template, session, url_for, redirect, flash, jsonify, abort, request
-from field_job_search.models import User, Enterprise, Offer
+from field_job_search.models import User, Enterprise, Offer, JobSeeker
 from field_job_search import db
 offers = Blueprint('offers', __name__, url_prefix='/offres')
 
@@ -81,6 +81,21 @@ def apply_for(id):
     else:
         return jsonify({'success': False})
     return  abort(403)
+
+
+
+@offers.route('/accept')
+def accept_offer():
+    if not session.get('user_id'):
+        abort(403)
+    offer = Offer.query.get(request.args.get('offer_id'))
+    js = Jobseeker = JobSeeker.query.get(request.args.get('jobseeker_id'))
+    if offer and Jobseeker:
+        return jsonify({
+            'success': True
+        })
+    return  abort(403)
+
 
 
     

@@ -120,7 +120,6 @@ class Enterprise extends React.Component {
             description: '',
             offers: [],
             alertMessage: '',
-            jobseekers: []
 
         }
         
@@ -145,7 +144,6 @@ class Enterprise extends React.Component {
             credentials: 'same-origin',
             headers: {
                 'Content-Type': 'application/json',
-                // 'Content-Type': 'application/x-www-form-urlencoded',
             },
             body: JSON.stringify({
                 name: this.state.name,
@@ -228,6 +226,14 @@ class Enterprise extends React.Component {
     handleModalTd(id){
         $('#modal-td' + id).modal()
     }
+    handleAccept(offer_id, js_id){
+        fetch('/offres/accept?offer_id=' +offer_id + '&jobseeker_id=' + js_id).then(res => {
+            if(res.ok){
+                res.json().then(res => {
+                })
+            }
+        })
+    }
     componentDidMount() {
         fetch('/offres/enterprise').then(res => {
             res.json().then( res => {
@@ -237,25 +243,29 @@ class Enterprise extends React.Component {
         })
     }
     render(){
-        let list_body = this.state.offers.map(offer => {
-            function  createMarkup(){
-                return {__html: seekerHtml}
-            }
-            let jobseekers = offer.jobseekers.map((js, i) => {
-                return (
-                    <div key={i} className="media">
-                        <div className="media-body">
-                            <h5 className="mt-0">{js.first_name + ' ' + js.last_name}</h5>
-                            <p>{js.cv}</p>
-                            <button className="btn btn-success btn-sm">accepter la demande</button>
+        let list_body = this.state.offers.map((offer) => {
+            let jobseekers = ''
+            if(offer.jobseekers){
+                let jobseekers = offer.jobseekers.map((js )=> {
+                    function  createMarkup2(){
+                        return {__html: js.cv}
+                    }
+                    return (
+                        <div key={js.id} className="media">
+                            <div className="media-body">
+                                <h5 className="mt-0">{js.first_name + ' ' + js.last_name}</h5>
+                                <p dangerouslySetInnerHTML={ createMarkup2() }></p>
+                                <button className="btn btn-outline-success btn-sm" onClick={() => this.handleAccept(offer.id, js.id)}>accepter la demande</button>
+                            </div>
                         </div>
-                    </div>
-                )
-            })
+                    )
+                })
+            }
+        
             let id = 'modal-td' + offer.id
             return (
                 
-                <tr key={offer.id} data-id={offer.id}>
+                <tr key={offer.id}>
                     <td>#{offer.id}</td>
                     <td>{offer.name}</td>
                     <td>{offer.apply} <button onClick={() => this.handleModalTd(offer.id) } className="btn btn-success">cliquer ici</button></td>
@@ -486,7 +496,7 @@ class Profile extends React.Component{
                                     </div>
                                     <div className="form-group">
 
-                                        <label  className="control-label">Votre CV</label>
+                                        <label  className="control-label">Votre CV (HTML)</label>
                                         <textarea onChange={this.handleCv} className="form-control" value={this.state.cv}></textarea>
                                     </div>
                                     <div className="form-group">
