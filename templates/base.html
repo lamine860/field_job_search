@@ -14,7 +14,6 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
     {% block stylesheet %}{% endblock stylesheet %}
-</head>
 <body>
     {% include 'partials/_nav.html' %}
     <main class="py-4 container">
@@ -31,10 +30,10 @@
     <script src="{{ url_for('static', filename='js/react-router-dom.min.js') }}"></script>
     <script>
         let path  = location.pathname
-        path = path.replace('/', '')
-        console.log(path)
+        path = path.replace('/', '').split('/').pop()
+        let element  = document.getElementById(path)
         if(path){
-            document.getElementById(path).classList.add('active')
+            element.classList.add('active')
          }
     </script>
     {% block javascript %}{% endblock javascript %}

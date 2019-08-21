@@ -1,9 +1,8 @@
 import json
 from flask import Blueprint, render_template, session, url_for, redirect, flash, jsonify, abort, request
-from field_job_search.models import User, Enterprise, Offer, JobSeeker
+from field_job_search.models import User, Enterprise, Offer, JobSeeker, Favorite
 from field_job_search import db
 offers = Blueprint('offers', __name__, url_prefix='/offres')
-
 
 
 
@@ -98,4 +97,29 @@ def accept_offer():
 
 
 
+@offers.route('/<offer_id>/favories')
+def add_to_favories(offer_id):
+    if not session.get('user_id'):
+        abort(403)
+    offer = Offer.query.get(offer_id)
+    jb = JobSeeker.query.filter_by(user=User.query.get(session.get('user_id'))).first()
+    if not Favorite.query.filter_by(jobseeker=jb, offer=offer).first():
+        favorite = Favorite()
+        favorite.offer_id = offer.id
+        jb.favories.append(favorite)
+        db.session.add(favorite)
+        db.session.commit()
+        return jsonify({'success': True})
+    return jsonify({'success': False})
+
+
     
+@offers.route('/favories')
+def favories():
+    if not session.get('user_id'):
+        abort(403)
+    jbs = JobSeeker.query.filter_by(user=User.query.get(session.get('user_id'))).first()
+    offers = []
+    for f in jbs.favories:
+        offers.append(f.offer.toJson())
+    return jsonify(offers)

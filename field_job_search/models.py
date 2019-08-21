@@ -78,6 +78,8 @@ class Offer(db.Model):
     enterprise_id = db.Column(db.Integer, db.ForeignKey('enterprises.id'))
     enterprise = db.relationship('Enterprise', back_populates='offers')
     jobseekers = db.relationship('JobSeeker', secondary=offer_job_seeker, lazy='subquery', backref=db.backref('offers', lazy=True))
+    favories = db.relationship('Favorite', back_populates='offer')
+
 
     def __repr__(self):
         return f'Offer {self.id} -- {self.name}'
@@ -117,6 +119,8 @@ class JobSeeker(db.Model):
     cv = db.Column(db.Text(), nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
     user = db.relationship('User', backref=db.backref('jobseeker', uselist=False))
+    favories = db.relationship('Favorite', back_populates='jobseeker')
+
     
 
 
@@ -129,4 +133,13 @@ class JobSeeker(db.Model):
             content = ''
         return { 'id': self.id, 'first_name': self.first_name, 'last_name': self.last_name, 'cv': self.cv, 'cv_content': content}    
 
+
+
+class Favorite(db.Model):
+    __tablename__ = 'favories'
+    id = db.Column(db.Integer, primary_key=True)
+    jobseeker_id = db.Column(db.Integer, db.ForeignKey('job_seekers.id'))
+    offer_id = db.Column(db.Integer, db.ForeignKey('offers.id'))
+    jobseeker = db.relationship('JobSeeker', back_populates='favories')
+    offer = db.relationship('Offer', back_populates='favories')
 

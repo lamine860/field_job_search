@@ -70,11 +70,19 @@ class Offers extends React.Component{
         }
 
     }
+    addToFavories(e, offer_id){
+        e.preventDefault()
+        fetch('/offres/' + offer_id + '/favories').then(res => {
+            res.json().then(res => {
+                console.log(res)
+            })
+        })
+    }
 
     render()
     {
         const html = this.state.offers.map((offer) => {
-            const mark = (<a href="" className="ml-auto btn btn-success">Ajouter à la favorite<i className="fa fa-star"></i></a>)
+            const mark = (<a href="" className="ml-auto btn btn-success" onClick={(e) => this.addToFavories(e, offer.id)}>Ajouter cette offer aux favoris<i className="fa fa-star"></i></a>)
             const link = offer.ollow ? <a onClick={(e) => this.apply(e, offer.id)} href={ '/offers/' + offer.id + '/postuler'} 
             className="btn btn-success">Postuler directement</a> : ''
             return (
@@ -515,15 +523,48 @@ class Profile extends React.Component{
 }
 
 
-const Favorite = () => {
-    return (
-        <div>
-            <h1>Page non disponible pour le moment!</h1>
-        </div>
-    )
+class Favorite extends React.Component{
+    constructor(props){
+        super(props)
+        this.state = {
+            offers: []
+        }
+    }
+    componentDidMount(){
+        fetch('/offres/favories').then(res => {
+            res.json().then(res =>  this.setState({
+                offers: res
+            }))
+        })
+    }
+    render (){
+        const html = this.state.offers.map((offer) => {
+            const mark = (<a href="" className="ml-auto btn btn-success" >Retiré cette offer aux favoris<i className="fa fa-star"></i></a>)
+            return (
+                <div className="card mb-2" key={offer.id}>
+                <div className="card-body">
+                    <div className="card-title">{ offer.name }</div>
+                    Depuis le <small className="text-muted">{ offer.date_posted }</small>&nbsp;&nbsp;&nbsp;
+                    <strong>{ offer.enterprise }</strong>
+                    <p className="card-text">{ offer.description }</p>
+                    <div className="d-flex">
+                        {mark}
+                    </div>
+                </div>
+            </div>
+            )
+        })
+        return (
+            <div>
+                <h1>Vos offres favoris</h1>
+                {html}
+            </div>
+        )
+    }
 }
 
 const Notification = () => {
+
     return (
         <div>
             <h1>Page non disponible pour le moment!</h1>
@@ -540,7 +581,7 @@ const App = () => {
                 <Route path='/offres' exact component={Offers}/>
                 <Route path='/entreprise' exact component={Enterprise}/>
                 <Route path='/profile' exact component={Profile}/>
-                <Route path='/offres/favorites' exact component={Favorite}/>
+                <Route path='/offres/favoris' exact component={Favorite}/>
                 <Route path='/notifications' exact component={Notification}/>
             </Switch>
         </BrowserRouter>

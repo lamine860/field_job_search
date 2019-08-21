@@ -129,6 +129,16 @@ var Offers = function (_React$Component) {
             }
         }
     }, {
+        key: "addToFavories",
+        value: function addToFavories(e, offer_id) {
+            e.preventDefault();
+            fetch('/offres/' + offer_id + '/favories').then(function (res) {
+                res.json().then(function (res) {
+                    console.log(res);
+                });
+            });
+        }
+    }, {
         key: "render",
         value: function render() {
             var _this4 = this;
@@ -136,8 +146,10 @@ var Offers = function (_React$Component) {
             var html = this.state.offers.map(function (offer) {
                 var mark = React.createElement(
                     "a",
-                    { href: "", className: "ml-auto btn btn-success" },
-                    "Ajouter \xE0 la favorite",
+                    { href: "", className: "ml-auto btn btn-success", onClick: function onClick(e) {
+                            return _this4.addToFavories(e, offer.id);
+                        } },
+                    "Ajouter cette offer aux favoris",
                     React.createElement("i", { className: "fa fa-star" })
                 );
                 var link = offer.ollow ? React.createElement(
@@ -924,19 +936,97 @@ var Profile = function (_React$Component3) {
     return Profile;
 }(React.Component);
 
-var Favorite = function Favorite() {
-    return React.createElement(
-        "div",
-        null,
-        React.createElement(
-            "h1",
-            null,
-            "Page non disponible pour le moment!"
-        )
-    );
-};
+var Favorite = function (_React$Component4) {
+    _inherits(Favorite, _React$Component4);
+
+    function Favorite(props) {
+        _classCallCheck(this, Favorite);
+
+        var _this13 = _possibleConstructorReturn(this, (Favorite.__proto__ || Object.getPrototypeOf(Favorite)).call(this, props));
+
+        _this13.state = {
+            offers: []
+        };
+        return _this13;
+    }
+
+    _createClass(Favorite, [{
+        key: "componentDidMount",
+        value: function componentDidMount() {
+            var _this14 = this;
+
+            fetch('/offres/favories').then(function (res) {
+                res.json().then(function (res) {
+                    return _this14.setState({
+                        offers: res
+                    });
+                });
+            });
+        }
+    }, {
+        key: "render",
+        value: function render() {
+            var html = this.state.offers.map(function (offer) {
+                var mark = React.createElement(
+                    "a",
+                    { href: "", className: "ml-auto btn btn-success" },
+                    "Retir\xE9 cette offer aux favoris",
+                    React.createElement("i", { className: "fa fa-star" })
+                );
+                return React.createElement(
+                    "div",
+                    { className: "card mb-2", key: offer.id },
+                    React.createElement(
+                        "div",
+                        { className: "card-body" },
+                        React.createElement(
+                            "div",
+                            { className: "card-title" },
+                            offer.name
+                        ),
+                        "Depuis le ",
+                        React.createElement(
+                            "small",
+                            { className: "text-muted" },
+                            offer.date_posted
+                        ),
+                        "\xA0\xA0\xA0",
+                        React.createElement(
+                            "strong",
+                            null,
+                            offer.enterprise
+                        ),
+                        React.createElement(
+                            "p",
+                            { className: "card-text" },
+                            offer.description
+                        ),
+                        React.createElement(
+                            "div",
+                            { className: "d-flex" },
+                            mark
+                        )
+                    )
+                );
+            });
+            return React.createElement(
+                "div",
+                null,
+                React.createElement(
+                    "h1",
+                    null,
+                    "Vos offres favoris"
+                ),
+                html
+            );
+        }
+    }]);
+
+    return Favorite;
+}(React.Component);
 
 var Notification = function Notification() {
+
     return React.createElement(
         "div",
         null,
@@ -959,7 +1049,7 @@ var App = function App() {
             React.createElement(Route, { path: "/offres", exact: true, component: Offers }),
             React.createElement(Route, { path: "/entreprise", exact: true, component: Enterprise }),
             React.createElement(Route, { path: "/profile", exact: true, component: Profile }),
-            React.createElement(Route, { path: "/offres/favorites", exact: true, component: Favorite }),
+            React.createElement(Route, { path: "/offres/favoris", exact: true, component: Favorite }),
             React.createElement(Route, { path: "/notifications", exact: true, component: Notification })
         )
     );
