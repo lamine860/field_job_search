@@ -123,3 +123,14 @@ def favories():
     for f in jbs.favories:
         offers.append(f.offer.toJson())
     return jsonify(offers)
+
+        
+@offers.route('/<offer_id>/favories/delete')
+def delete_favories(offer_id):
+    if not session.get('user_id'):
+        abort(403)
+    offer = Offer.query.get(offer_id)
+    favorite = Favorite.query.filter_by(offer=offer).first()
+    db.session.delete(favorite)
+    db.session.commit()
+    return jsonify({'success': True})

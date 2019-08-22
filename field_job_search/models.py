@@ -128,10 +128,7 @@ class JobSeeker(db.Model):
         return f'Job Seeker {self.id} -- {self.first_name} {self.last_name}'
         
     def toJson(self):
-        content = ''
-        if self.cv:
-            content = ''
-        return { 'id': self.id, 'first_name': self.first_name, 'last_name': self.last_name, 'cv': self.cv, 'cv_content': content}    
+        return { 'id': self.id, 'first_name': self.first_name, 'last_name': self.last_name, 'cv': self.cv}    
 
 
 

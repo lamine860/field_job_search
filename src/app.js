@@ -82,9 +82,9 @@ class Offers extends React.Component{
     render()
     {
         const html = this.state.offers.map((offer) => {
-            const mark = (<a href="" className="ml-auto btn btn-success" onClick={(e) => this.addToFavories(e, offer.id)}>Ajouter cette offer aux favoris<i className="fa fa-star"></i></a>)
+            const mark = (<a href="" className="ml-auto btn btn-outline-success" onClick={(e) => this.addToFavories(e, offer.id)}>Ajouter cette offer aux favoris<i className="fa fa-star"></i></a>)
             const link = offer.ollow ? <a onClick={(e) => this.apply(e, offer.id)} href={ '/offers/' + offer.id + '/postuler'} 
-            className="btn btn-success">Postuler directement</a> : ''
+            className="btn btn-outline-success">Postuler directement</a> : ''
             return (
                 <div className="card mb-2" key={offer.id}>
                 <div className="card-body">
@@ -109,7 +109,7 @@ class Offers extends React.Component{
                 <div className="jumbotron" onSubmit={(e) => e.preventDefault() }>
                     <form className="form-inline">
                         <input className="form-control py-2" onInput={ this.handleSeach } style={style} type="search" placeholder="Métier, Mots cles" aria-label="Search" />
-                        <button className="btn btn-outline-success my-3 px-5" type="submit"><i className="fa fa-search"></i></button>
+                        <button className="btn btn-outline-success my-3 px-5" type="submit"><i className="fas fa-search"></i></button>
                     </form>
                 </div>
                 <h4 className="text-muted">{this.state.offers.length } offres corespondent à votre recherche</h4>
@@ -234,13 +234,8 @@ class Enterprise extends React.Component {
     handleModalTd(id){
         $('#modal-td' + id).modal()
     }
-    handleAccept(offer_id, js_id){
-        fetch('/offres/accept?offer_id=' +offer_id + '&jobseeker_id=' + js_id).then(res => {
-            if(res.ok){
-                res.json().then(res => {
-                })
-            }
-        })
+    handleAccept(e, js_id, offer_id){
+        e.preventDefault()
     }
     componentDidMount() {
         fetch('/offres/enterprise').then(res => {
@@ -276,7 +271,6 @@ class Enterprise extends React.Component {
                 <tr key={offer.id}>
                     <td>#{offer.id}</td>
                     <td>{offer.name}</td>
-                    <td>{offer.apply} <button onClick={() => this.handleModalTd(offer.id) } className="btn btn-success">cliquer ici</button></td>
                     <td>
                         <button onClick={ () => this.showModal(offer)} className="btn btn-warning btn-sm">modifier</button> &nbsp;
                         <button onClick={() => this.handleDelete(offer)} className="btn btn-danger btn-sm">suprimer</button>
@@ -311,20 +305,54 @@ class Enterprise extends React.Component {
                         </button>
                     </div>
         let alertMessage = this.state.alertMessage ? alert : ''
-        
+        let apply = this.state.offers.map((offer) => {
+            if(!offer.jobseekers.length) return ''
+            let jbs = offer.jobseekers.map(jb => {
+                let markUp = function(){
+                    return {__html: jb.cv }
+                }
+                return (
+                    <div className="media mb-3 border-bottom" key={jb.id}>
+                        <div className="media-body">
+                            <h5 className="mt-0">{ jb.first_name  + ' ' +  jb.last_name }</h5>
+                            <h4>CV:</h4>
+                            <div dangerouslySetInnerHTML={markUp()}></div>
+                            <div className="d-flex mb-3">
+                                <button className="btn btn-outline-success btn-sm ml-auto" onClick={(e) => this.handleAccept(e, jb.id, offer.id)}>accepter la demande</button>
+                            </div>
+                        </div>
+                    </div>
+
+
+                )
+            })
+            return (
+                <div key={offer.id} className="card mb-2">
+                    <div className="card-header"><strong>{offer.name}</strong> &nbsp; <small className="badge badge-info">{ offer.apply }</small> demandeur(s) d'emploi</div>
+                    <div className="card-body">
+                        {jbs}
+                    </div>
+                    <div className="card-footer d-flex">
+                        <span className="mr-auto">Créer depuis {offer.date_posted} &nbsp;<i className="far fa-clock"></i></span>
+                        <span>{offer.enterprise}</span>
+                    </div>
+                </div>
+            )
+        })
         return (
             <div>
                 <div className="row">
                     <div className="col-md-12">
+                    <div className="col-md-12 my-5">
+                        <h3>Géstion des demandeur d'emploi</h3>
+                        {apply}
+                    </div>
                         <h3 className="text-center">Géstion des offres</h3>
                         <table className="table table-striped">
                             <thead>
                                 <tr>
                                     <th>#Identifient</th>
                                     <th>Nom</th>
-                                    <th>
-                                        voire les demandeurs
-                                    </th>
                                     <th>Action</th>
                                 </tr>
                             </thead>
@@ -356,6 +384,7 @@ class Enterprise extends React.Component {
                             </div>
                         </div>
                     </div>
+                    
                 </div>
                 <div className="modal" id="modal-edit" tabIndex="-1" role="dialog">
                     <div className="modal-dialog" role="document">
@@ -537,9 +566,15 @@ class Favorite extends React.Component{
             }))
         })
     }
+    removeToFavories(e, offer_id){
+        e.preventDefault()
+        fetch('/offres/' + offer_id + '/favories/delete')
+        e.target.closest('.card').remove()
+    }
+
     render (){
         const html = this.state.offers.map((offer) => {
-            const mark = (<a href="" className="ml-auto btn btn-success" >Retiré cette offer aux favoris<i className="fa fa-star"></i></a>)
+            const mark = (<a href="" className="ml-auto btn btn-outline-success" onClick={(e) => this.removeToFavories(e, offer.id)} >Retiré cette offer aux favoris <i className="fas fa-star x5"></i></a>)
             return (
                 <div className="card mb-2" key={offer.id}>
                 <div className="card-body">
@@ -554,12 +589,23 @@ class Favorite extends React.Component{
             </div>
             )
         })
-        return (
-            <div>
-                <h1>Vos offres favoris</h1>
-                {html}
-            </div>
-        )
+        if (this.state.offers.length){
+
+            return (
+                <div>
+                    <h1>Vos offres favoris</h1>
+                    {html}
+                </div>
+            )
+        }
+       else{
+           return (
+               <div>
+                   <h1>Vous n'avez pas des offres favoris pour le moment</h1>
+               </div>
+           )
+
+       } 
     }
 }
 

@@ -146,7 +146,7 @@ var Offers = function (_React$Component) {
             var html = this.state.offers.map(function (offer) {
                 var mark = React.createElement(
                     "a",
-                    { href: "", className: "ml-auto btn btn-success", onClick: function onClick(e) {
+                    { href: "", className: "ml-auto btn btn-outline-success", onClick: function onClick(e) {
                             return _this4.addToFavories(e, offer.id);
                         } },
                     "Ajouter cette offer aux favoris",
@@ -157,7 +157,7 @@ var Offers = function (_React$Component) {
                     { onClick: function onClick(e) {
                             return _this4.apply(e, offer.id);
                         }, href: '/offers/' + offer.id + '/postuler',
-                        className: "btn btn-success" },
+                        className: "btn btn-outline-success" },
                     "Postuler directement"
                 ) : '';
                 return React.createElement(
@@ -216,7 +216,7 @@ var Offers = function (_React$Component) {
                         React.createElement(
                             "button",
                             { className: "btn btn-outline-success my-3 px-5", type: "submit" },
-                            React.createElement("i", { className: "fa fa-search" })
+                            React.createElement("i", { className: "fas fa-search" })
                         )
                     )
                 ),
@@ -369,12 +369,8 @@ var Enterprise = function (_React$Component2) {
         }
     }, {
         key: "handleAccept",
-        value: function handleAccept(offer_id, js_id) {
-            fetch('/offres/accept?offer_id=' + offer_id + '&jobseeker_id=' + js_id).then(function (res) {
-                if (res.ok) {
-                    res.json().then(function (res) {});
-                }
-            });
+        value: function handleAccept(e, js_id, offer_id) {
+            e.preventDefault();
         }
     }, {
         key: "componentDidMount",
@@ -439,19 +435,6 @@ var Enterprise = function (_React$Component2) {
                         "td",
                         null,
                         offer.name
-                    ),
-                    React.createElement(
-                        "td",
-                        null,
-                        offer.apply,
-                        " ",
-                        React.createElement(
-                            "button",
-                            { onClick: function onClick() {
-                                    return _this9.handleModalTd(offer.id);
-                                }, className: "btn btn-success" },
-                            "cliquer ici"
-                        )
                     ),
                     React.createElement(
                         "td",
@@ -535,7 +518,86 @@ var Enterprise = function (_React$Component2) {
                 )
             );
             var alertMessage = this.state.alertMessage ? alert : '';
-
+            var apply = this.state.offers.map(function (offer) {
+                if (!offer.jobseekers.length) return '';
+                var jbs = offer.jobseekers.map(function (jb) {
+                    var markUp = function markUp() {
+                        return { __html: jb.cv };
+                    };
+                    return React.createElement(
+                        "div",
+                        { className: "media mb-3 border-bottom", key: jb.id },
+                        React.createElement(
+                            "div",
+                            { className: "media-body" },
+                            React.createElement(
+                                "h5",
+                                { className: "mt-0" },
+                                jb.first_name + ' ' + jb.last_name
+                            ),
+                            React.createElement(
+                                "h4",
+                                null,
+                                "CV:"
+                            ),
+                            React.createElement("div", { dangerouslySetInnerHTML: markUp() }),
+                            React.createElement(
+                                "div",
+                                { className: "d-flex mb-3" },
+                                React.createElement(
+                                    "button",
+                                    { className: "btn btn-outline-success btn-sm ml-auto", onClick: function onClick(e) {
+                                            return _this9.handleAccept(e, jb.id, offer.id);
+                                        } },
+                                    "accepter la demande"
+                                )
+                            )
+                        )
+                    );
+                });
+                return React.createElement(
+                    "div",
+                    { key: offer.id, className: "card mb-2" },
+                    React.createElement(
+                        "div",
+                        { className: "card-header" },
+                        React.createElement(
+                            "strong",
+                            null,
+                            offer.name
+                        ),
+                        " \xA0 ",
+                        React.createElement(
+                            "small",
+                            { className: "badge badge-info" },
+                            offer.apply
+                        ),
+                        " demandeur(s) d'emploi"
+                    ),
+                    React.createElement(
+                        "div",
+                        { className: "card-body" },
+                        jbs
+                    ),
+                    React.createElement(
+                        "div",
+                        { className: "card-footer d-flex" },
+                        React.createElement(
+                            "span",
+                            { className: "mr-auto" },
+                            "Cr\xE9er depuis ",
+                            offer.date_posted,
+                            " \xA0",
+                            React.createElement("i", { className: "far fa-clock" })
+                        ),
+                        React.createElement(
+                            "span",
+                            null,
+                            offer.enterprise
+                        )
+                    )
+                );
+            });
             return React.createElement(
                 "div",
                 null,
@@ -545,6 +607,16 @@ var Enterprise = function (_React$Component2) {
                     React.createElement(
                         "div",
                         { className: "col-md-12" },
+                        React.createElement(
+                            "div",
+                            { className: "col-md-12 my-5" },
+                            React.createElement(
+                                "h3",
+                                null,
+                                "G\xE9stion des demandeur d'emploi"
+                            ),
+                            apply
+                        ),
                         React.createElement(
                             "h3",
                             { className: "text-center" },
@@ -568,11 +640,6 @@ var Enterprise = function (_React$Component2) {
                                         "th",
                                         null,
                                         "Nom"
-                                    ),
-                                    React.createElement(
-                                        "th",
-                                        null,
-                                        "voire les demandeurs"
                                     ),
                                     React.createElement(
                                         "th",
@@ -964,14 +1031,25 @@ var Favorite = function (_React$Component4) {
             });
         }
     }, {
+        key: "removeToFavories",
+        value: function removeToFavories(e, offer_id) {
+            e.preventDefault();
+            fetch('/offres/' + offer_id + '/favories/delete');
+            e.target.closest('.card').remove();
+        }
+    }, {
         key: "render",
         value: function render() {
+            var _this15 = this;
+
             var html = this.state.offers.map(function (offer) {
                 var mark = React.createElement(
                     "a",
-                    { href: "", className: "ml-auto btn btn-success" },
-                    "Retir\xE9 cette offer aux favoris",
-                    React.createElement("i", { className: "fa fa-star" })
+                    { href: "", className: "ml-auto btn btn-outline-success", onClick: function onClick(e) {
+                            return _this15.removeToFavories(e, offer.id);
+                        } },
+                    "Retir\xE9 cette offer aux favoris ",
+                    React.createElement("i", { className: "fas fa-star x5" })
                 );
                 return React.createElement(
                     "div",
@@ -1009,16 +1087,29 @@ var Favorite = function (_React$Component4) {
                     )
                 );
             });
-            return React.createElement(
-                "div",
-                null,
-                React.createElement(
-                    "h1",
+            if (this.state.offers.length) {
+
+                return React.createElement(
+                    "div",
                     null,
-                    "Vos offres favoris"
-                ),
-                html
-            );
+                    React.createElement(
+                        "h1",
+                        null,
+                        "Vos offres favoris"
+                    ),
+                    html
+                );
+            } else {
+                return React.createElement(
+                    "div",
+                    null,
+                    React.createElement(
+                        "h1",
+                        null,
+                        "Vous n'avez pas des offres favoris pour le moment"
+                    )
+                );
+            }
         }
     }]);
 

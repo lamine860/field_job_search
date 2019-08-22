@@ -21,17 +21,17 @@
                   {% if current_user.is_jobseeker_account() %}
                     
                     <il class="nav-item" id="favoris">
-                      <a href="/offres/favoris" id="offres/favorites" class="nav-link"> favorites</a>
+                      <a href="/offres/favoris" id="offres/favorites" class="nav-link"> <i class="fas fa-star"></i> favorites</a>
                     </il>
                     <il class="nav-item" id="notifications">
-                      <a href="/notifications"  class="nav-link">notifications</a>
+                      <a href="/notifications"  class="nav-link"><i class="fas fa-bell"></i> notifications</a>
                     </il>
                     <il class="nav-item" id="profile" >
-                      <a href="/profile" class="nav-link">profile</a>
+                      <a href="/profile" class="nav-link"><i class="fas fa-user"></i> profile</a>
                     </il>
                   {% endif %}
                   <il class="nav-item">
-                    <a href="{{ url_for('users.logout') }}" class="nav-link">deconnexion</a>
+                    <a href="{{ url_for('users.logout') }}" class="nav-link"><i class="fas fa-sign-out-alt"> </i>deconnexion</a>
                   </il>
                 {% else %}
                 <li class="nav-item" id="connexion">

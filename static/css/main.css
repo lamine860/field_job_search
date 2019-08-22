@@ -18,9 +18,8 @@ body
 }
 
 .btn.btn-outline-success , .btn.btn-success{
-    background-color: #22A799;
     border-color: #22A799!important;
-    color: white;
+    color: #555;
 }
 
 
