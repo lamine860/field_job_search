@@ -27,3 +27,16 @@ body
     background-color: #22A7CC!important;
     color: white;
 }
+
+.notify {
+    position: relative;;
+}
+
+
+.notify-icon {
+    position: absolute;
+    color: white;
+    top:-5px;
+    right: 10px;
+}
+

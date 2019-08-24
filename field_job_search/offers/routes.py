@@ -1,6 +1,6 @@
 import json
 from flask import Blueprint, render_template, session, url_for, redirect, flash, jsonify, abort, request
-from field_job_search.models import User, Enterprise, Offer, JobSeeker, Favorite
+from field_job_search.models import User, Enterprise, Offer, JobSeeker, Favorite, Accepted
 from field_job_search import db
 offers = Blueprint('offers', __name__, url_prefix='/offres')
 
@@ -38,7 +38,7 @@ def create():
             entp.offers.append(offer)
             db.session.add(offer)
             db.session.commit()
-            return jsonify({'offers': offer.toJson()})
+            return jsonify(offer.toJson())
     return jsonify({'error': 'Donne invalid'}), 422    
 
 
@@ -75,7 +75,7 @@ def apply_for(id):
     jobseeker = user.jobseeker
     if offer and jobseeker not in offer.jobseekers:
         offer.jobseekers.append(jobseeker)
-        # db.session.commit()
+        db.session.commit()
         return jsonify(offer.toJson())
     else:
         return jsonify({'success': False})
@@ -134,3 +134,19 @@ def delete_favories(offer_id):
     db.session.delete(favorite)
     db.session.commit()
     return jsonify({'success': True})
+
+
+
+@offers.route('/<offer_id>/accept/<jobseeker_id>')
+def offer_accept(offer_id, jobseeker_id):
+    if not session.get('user_id'):
+        abort(403)
+    offer = Offer.query.get(offer_id)
+    jbs = JobSeeker.query.get(jobseeker_id)
+    if not Accepted.query.filter_by(offer=offer, jobseeker=jbs).first():
+        acc = Accepted(offer=offer, jobseeker=jbs)
+        db.session.add(acc)
+        db.session.commit()
+        return jsonify('success')
+    return jsonify('failure')
+

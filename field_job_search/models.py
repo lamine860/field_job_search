@@ -88,11 +88,11 @@ class Offer(db.Model):
         user_id = session.get('user_id')
         if not user_id:
             return False
-        Jobseeker = User.query.get(user_id).jobseeker
-        if Jobseeker:
-            return Jobseeker not in self.jobseekers
-        return False    
-
+        jobseeker = User.query.get(user_id).jobseeker
+        if not jobseeker:
+            return False
+        return jobseeker not in self.jobseekers 
+        
 
     def toJson(self):
         jobseekers = self.jobseekers
@@ -140,3 +140,18 @@ class Favorite(db.Model):
     jobseeker = db.relationship('JobSeeker', back_populates='favories')
     offer = db.relationship('Offer', back_populates='favories')
 
+
+class Accepted(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    jobseeker_id = db.Column(db.Integer, db.ForeignKey('job_seekers.id'))
+    offer_id = db.Column(db.Integer, db.ForeignKey('offers.id'))
+    jobseeker = db.relationship('JobSeeker', uselist=False)
+    offer = db.relationship('Offer', uselist=False)
+
+    @classmethod
+    def toArrayByJs(cls, js):
+        items = cls.query.filter_by(jobseeker=js).all()
+        accArray = []
+        for item in items:
+            accArray.append(item.offer.toJson())
+        return accArray

@@ -82,10 +82,12 @@ var Offers = function (_React$Component) {
         value: function apply(e, offer_id) {
             var _this2 = this;
 
+            console.log(offer_id);
             e.preventDefault();
             fetch('/offres/' + offer_id + '/postul').then(function (res) {
                 if (res.ok) {
                     res.json().then(function (offer) {
+                        console.log(offer);
                         current_offer = _this2.state.offers.filter(function (offer) {
                             return offer.id != offer_id;
                         });
@@ -267,23 +269,16 @@ var Enterprise = function (_React$Component2) {
                     description: _this5.state.description
                 })
             }).then(function (res) {
-                if (res.ok) {
-                    res.json().then(function (offer) {
-                        _this5.setState(function (satate) {
-                            return {
-                                alertMessage: 'L\'offre a bien été ajouter',
-                                offers: [offer].concat(_toConsumableArray(_this5.state.offers))
-                            };
-                        });
-                    });
-                } else {
-                    _this5.setState({
-                        alertMessage: 'Oups! Il se peut que vous n\'avez pas bien remplie les champs.'
-                    });
-                }
+                return res.json();
+            }).then(function (offer) {
+                _this5.setState(function (state) {
+                    return {
+                        offers: [offer].concat(_toConsumableArray(state.offers)),
+                        name: '',
+                        description: ''
+                    };
+                });
             });
-            _this5.state.description = '';
-            _this5.state.name = '';
         };
 
         _this5.state = {
@@ -369,8 +364,13 @@ var Enterprise = function (_React$Component2) {
         }
     }, {
         key: "handleAccept",
-        value: function handleAccept(e, js_id, offer_id) {
+        value: function handleAccept(e, offer_id, jb_id) {
             e.preventDefault();
+            fetch('/offres/' + offer_id + '/accept/' + jb_id).then(function (res) {
+                return res.json();
+            }).then(function (res) {
+                return console.log(res);
+            });
         }
     }, {
         key: "componentDidMount",
@@ -391,37 +391,6 @@ var Enterprise = function (_React$Component2) {
             var _this9 = this;
 
             var list_body = this.state.offers.map(function (offer) {
-                var jobseekers = '';
-                if (offer.jobseekers) {
-                    var _jobseekers = offer.jobseekers.map(function (js) {
-                        function createMarkup2() {
-                            return { __html: js.cv };
-                        }
-                        return React.createElement(
-                            "div",
-                            { key: js.id, className: "media" },
-                            React.createElement(
-                                "div",
-                                { className: "media-body" },
-                                React.createElement(
-                                    "h5",
-                                    { className: "mt-0" },
-                                    js.first_name + ' ' + js.last_name
-                                ),
-                                React.createElement("p", { dangerouslySetInnerHTML: createMarkup2() }),
-                                React.createElement(
-                                    "button",
-                                    { className: "btn btn-outline-success btn-sm", onClick: function onClick() {
-                                            return _this9.handleAccept(offer.id, js.id);
-                                        } },
-                                    "accepter la demande"
-                                )
-                            )
-                        );
-                    });
-                }
-
-                var id = 'modal-td' + offer.id;
                 return React.createElement(
                     "tr",
                     { key: offer.id },
@@ -453,50 +422,6 @@ var Enterprise = function (_React$Component2) {
                                     return _this9.handleDelete(offer);
                                 }, className: "btn btn-danger btn-sm" },
                             "suprimer"
-                        ),
-                        React.createElement(
-                            "div",
-                            { className: "modal fade", id: id, tabIndex: "-1", role: "dialog", "aria-labelledby": "exampleModalLongTitle", "aria-hidden": "true" },
-                            React.createElement(
-                                "div",
-                                { className: "modal-dialog", role: "document" },
-                                React.createElement(
-                                    "div",
-                                    { className: "modal-content" },
-                                    React.createElement(
-                                        "div",
-                                        { className: "modal-header" },
-                                        React.createElement(
-                                            "h5",
-                                            { className: "modal-title", id: "exampleModalLongTitle" },
-                                            offer.name
-                                        ),
-                                        React.createElement(
-                                            "button",
-                                            { type: "button", className: "close", "data-dismiss": "modal", "aria-label": "Close" },
-                                            React.createElement(
-                                                "span",
-                                                { "aria-hidden": "true" },
-                                                "\xD7"
-                                            )
-                                        )
-                                    ),
-                                    React.createElement(
-                                        "div",
-                                        { className: "modal-body", key: offer.id },
-                                        jobseekers
-                                    ),
-                                    React.createElement(
-                                        "div",
-                                        { className: "modal-footer" },
-                                        React.createElement(
-                                            "button",
-                                            { type: "button", className: "btn btn-secondary", "data-dismiss": "modal" },
-                                            "Close"
-                                        )
-                                    )
-                                )
-                            )
                         )
                     )
                 );
@@ -519,7 +444,6 @@ var Enterprise = function (_React$Component2) {
             );
             var alertMessage = this.state.alertMessage ? alert : '';
             var apply = this.state.offers.map(function (offer) {
-                if (!offer.jobseekers.length) return '';
                 var jbs = offer.jobseekers.map(function (jb) {
                     var markUp = function markUp() {
                         return { __html: jb.cv };
@@ -547,7 +471,7 @@ var Enterprise = function (_React$Component2) {
                                 React.createElement(
                                     "button",
                                     { className: "btn btn-outline-success btn-sm ml-auto", onClick: function onClick(e) {
-                                            return _this9.handleAccept(e, jb.id, offer.id);
+                                            return _this9.handleAccept(e, offer.id, jb.id);
                                         } },
                                     "accepter la demande"
                                 )
@@ -1116,19 +1040,120 @@ var Favorite = function (_React$Component4) {
     return Favorite;
 }(React.Component);
 
-var Notification = function Notification() {
+var Notification = function (_React$Component5) {
+    _inherits(Notification, _React$Component5);
 
-    return React.createElement(
-        "div",
-        null,
-        React.createElement(
-            "h1",
-            null,
-            "Page non disponible pour le moment!"
-        )
-    );
-};
+    function Notification(props) {
+        _classCallCheck(this, Notification);
+
+        var _this16 = _possibleConstructorReturn(this, (Notification.__proto__ || Object.getPrototypeOf(Notification)).call(this, props));
+
+        _this16.state = {
+            jobseeker: {},
+            offers: []
+        };
+        return _this16;
+    }
+
+    _createClass(Notification, [{
+        key: "componentDidMount",
+        value: function componentDidMount() {
+            var _this17 = this;
+
+            fetch('/notifications/all').then(function (res) {
+                return res.json();
+            }).then(function (notifications) {
+                console.log(notifications);
+                _this17.setState({
+                    offers: notifications.offers,
+                    jobseeker: notifications.jobseeker
+                });
+            });
+        }
+    }, {
+        key: "render",
+        value: function render() {
+            if (!this.state.offers.length) {
+                return React.createElement(
+                    "div",
+                    null,
+                    React.createElement(
+                        "h5",
+                        null,
+                        "Vous avez aucune notifications pour le moment"
+                    )
+                );
+            }
+            var content = this.state.offers.map(function (offer) {
+                return React.createElement(
+                    "div",
+                    { key: offer.id, className: "card" },
+                    React.createElement(
+                        "div",
+                        { className: "card-body" },
+                        React.createElement(
+                            "p",
+                            null,
+                            "L'Entreprise - ",
+                            React.createElement(
+                                "u",
+                                null,
+                                offer.enterprise
+                            ),
+                            " a accepter votre demande d'emploi sur l'offre:"
+                        ),
+                        React.createElement(
+                            "h5",
+                            null,
+                            offer.name
+                        ),
+                        React.createElement(
+                            "p",
+                            null,
+                            offer.description
+                        ),
+                        React.createElement(
+                            "button",
+                            { className: "btn btn-outline-info" },
+                            "Marquer comme lu"
+                        )
+                    )
+                );
+            });
+            return React.createElement(
+                "div",
+                null,
+                React.createElement(
+                    "div",
+                    { className: "media" },
+                    React.createElement(
+                        "div",
+                        { className: "media-body" },
+                        React.createElement(
+                            "h3",
+                            { className: "mt-0" },
+                            "F\xE9licitations ",
+                            this.state.jobseeker.first_name + ' ' + this.state.jobseeker.last_name
+                        ),
+                        content
+                    )
+                )
+            );
+        }
+    }]);
+
+    return Notification;
+}(React.Component);
+
 var App = function App() {
+    fetch('/notify').then(function (res) {
+        return res.json();
+    }).then(function (count) {
+        if (count) {
+            var notifyElement = $('.notify');
+            notifyElement.append('<i class="notify-icon badge badge-warning">' + count + '</i>');
+        }
+    });
 
     return React.createElement(
         BrowserRouter,

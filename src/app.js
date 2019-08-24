@@ -30,10 +30,12 @@ class Offers extends React.Component{
         this.handleSeach = this.handleSeach.bind(this)
     }
     apply(e, offer_id){
+        console.log(offer_id)
         e.preventDefault()
         fetch('/offres/'+ offer_id +'/postul').then(res => {
             if(res.ok){
                 res.json().then(offer => {
+                    console.log(offer)
                     current_offer = this.state.offers.filter(offer => offer.id != offer_id)
                     this.setState(state => {
                         return {
@@ -158,24 +160,17 @@ class Enterprise extends React.Component {
                 description: this.state.description,
             }),
         }).then(res => {
-            if (res.ok){
-                res.json().then(offer => {
-                    this.setState(satate => {
-                        return {
-                            alertMessage: 'L\'offre a bien été ajouter',
-                            offers: [offer, ...this.state.offers],
-                        }
-                    })
-                })
-            }else{
-                this.setState({
-                    alertMessage: 'Oups! Il se peut que vous n\'avez pas bien remplie les champs.'
-                })
-               
-            }
+            return res.json()
+        }).then(offer => {
+            this.setState(state => {
+                return {
+                    offers: [offer, ...state.offers],
+                    name: '',
+                    description: ''
+                }
+            })
         })
-        this.state.description = ''
-        this.state.name = ''
+        
         
     }
     handleEdit(){
@@ -234,8 +229,9 @@ class Enterprise extends React.Component {
     handleModalTd(id){
         $('#modal-td' + id).modal()
     }
-    handleAccept(e, js_id, offer_id){
+    handleAccept(e, offer_id, jb_id){
         e.preventDefault()
+        fetch('/offres/' + offer_id + '/accept/' +jb_id ).then(res => res.json()).then(res  => console.log(res))
     }
     componentDidMount() {
         fetch('/offres/enterprise').then(res => {
@@ -247,53 +243,13 @@ class Enterprise extends React.Component {
     }
     render(){
         let list_body = this.state.offers.map((offer) => {
-            let jobseekers = ''
-            if(offer.jobseekers){
-                let jobseekers = offer.jobseekers.map((js )=> {
-                    function  createMarkup2(){
-                        return {__html: js.cv}
-                    }
-                    return (
-                        <div key={js.id} className="media">
-                            <div className="media-body">
-                                <h5 className="mt-0">{js.first_name + ' ' + js.last_name}</h5>
-                                <p dangerouslySetInnerHTML={ createMarkup2() }></p>
-                                <button className="btn btn-outline-success btn-sm" onClick={() => this.handleAccept(offer.id, js.id)}>accepter la demande</button>
-                            </div>
-                        </div>
-                    )
-                })
-            }
-        
-            let id = 'modal-td' + offer.id
             return (
-                
                 <tr key={offer.id}>
                     <td>#{offer.id}</td>
                     <td>{offer.name}</td>
                     <td>
                         <button onClick={ () => this.showModal(offer)} className="btn btn-warning btn-sm">modifier</button> &nbsp;
                         <button onClick={() => this.handleDelete(offer)} className="btn btn-danger btn-sm">suprimer</button>
-
-                        <div  className="modal fade" id={id}  tabIndex="-1" role="dialog" aria-labelledby="exampleModalLongTitle" aria-hidden="true">
-                        <div className="modal-dialog" role="document">
-                            <div className="modal-content">
-                            <div className="modal-header">
-                                <h5 className="modal-title" id="exampleModalLongTitle">{offer.name }</h5>
-                                <button type="button" className="close" data-dismiss="modal" aria-label="Close">
-                                <span aria-hidden="true">&times;</span>
-                                </button>
-                            </div>
-                            <div className="modal-body" key={offer.id}>
-                                {jobseekers}
-                            </div>
-                            <div className="modal-footer">
-                                <button type="button" className="btn btn-secondary" data-dismiss="modal">Close</button>
-                            </div>
-                            </div>
-                        </div>
-                        </div>
-
                     </td>
                 </tr>
             )
@@ -306,7 +262,6 @@ class Enterprise extends React.Component {
                     </div>
         let alertMessage = this.state.alertMessage ? alert : ''
         let apply = this.state.offers.map((offer) => {
-            if(!offer.jobseekers.length) return ''
             let jbs = offer.jobseekers.map(jb => {
                 let markUp = function(){
                     return {__html: jb.cv }
@@ -318,7 +273,7 @@ class Enterprise extends React.Component {
                             <h4>CV:</h4>
                             <div dangerouslySetInnerHTML={markUp()}></div>
                             <div className="d-flex mb-3">
-                                <button className="btn btn-outline-success btn-sm ml-auto" onClick={(e) => this.handleAccept(e, jb.id, offer.id)}>accepter la demande</button>
+                                <button className="btn btn-outline-success btn-sm ml-auto" onClick={(e) => this.handleAccept(e, offer.id, jb.id)}>accepter la demande</button>
                             </div>
                         </div>
                     </div>
@@ -609,16 +564,67 @@ class Favorite extends React.Component{
     }
 }
 
-const Notification = () => {
+class Notification extends React.Component {
+    constructor(props){
+        super(props)
+        this.state = {
+            jobseeker: {},
+            offers: [] 
+        }
+    }
+    componentDidMount(){
+        fetch('/notifications/all').then(res => res.json()).then(notifications => {
+            console.log(notifications)
+            this.setState({
+                offers: notifications.offers,
+                jobseeker: notifications.jobseeker
+            })
+        })
+    }
 
-    return (
-        <div>
-            <h1>Page non disponible pour le moment!</h1>
-        </div>
-    )
+    render(){
+        if(!this.state.offers.length){
+            return (
+                <div>
+                    <h5>Vous avez aucune notifications pour le moment</h5>
+                </div>
+            )
+        }
+        let content =  this.state.offers.map(offer => {
+            return (
+                <div key={offer.id} className="card">
+                    <div className="card-body">
+                    <p>L'Entreprise - <u>{offer.enterprise}</u> a accepter votre demande d'emploi sur l'offre:</p>
+                    <h5>{offer.name}</h5>
+                    <p>
+                        {offer.description}
+                    </p>
+                    <button className="btn btn-outline-info">Marquer comme lu</button>
+                    </div>
+                </div>
+            )
+        })
+        return (
+                <div>
+                    <div className="media">
+                        <div className="media-body">
+                            <h3 className="mt-0">Félicitations {this.state.jobseeker.first_name + ' ' +  this.state.jobseeker.last_name}</h3>
+                            {content }
+                        </div>
+                    </div>
+
+                </div>
+        )
+    }
 }
 const App = () => {
-
+    fetch('/notify').then(res => res.json()).then(count  => {
+        if(count){
+            let notifyElement = $('.notify')
+            notifyElement.append('<i class="notify-icon badge badge-warning">' + count + '</i>')
+        }
+    })
+    
 
     return (
         <BrowserRouter>
