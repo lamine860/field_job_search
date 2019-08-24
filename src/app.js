@@ -13,10 +13,10 @@ const Home = () => {
                 <a href="/offres" className="btn btn btn-outline-success">Je démarre ma rechereche</a>
             </div>
             <div className="content-section">
-                <h1 className="text-center">Une présentation du systeme</h1>
+                <h1 className="text-center">Trouve emploi</h1>
                 <p>
-                    Lorem ipsum dolor sit amet consectetur, adipisicing elit. Non perspiciatis sequi odio animi veniam aliquam, cumque omnis deleniti et tenetur voluptatem quos in, quidem, illo porro maiores iusto amet itaque?
-                </p>
+                    <strong>Trouve emploi</strong> est un systeme professionnel qui vous permet de trouvez rapidement et simplement votre travail avec une interface intuitive et simple.
+                Nous vous listons toutes les offres posté par des grandes et petites enterprises afin que vous faciez votre choix.</p>
             </div>
         </div>
     )
@@ -581,6 +581,12 @@ class Notification extends React.Component {
             })
         })
     }
+    markAsRead(e, offer_id){
+        console.log(offer_id)
+        fetch('/notifications/' + offer_id + '/mark').then(res => res.json()).then(res => {
+            location.reload()
+        })
+    }
 
     render(){
         if(!this.state.offers.length){
@@ -599,7 +605,7 @@ class Notification extends React.Component {
                     <p>
                         {offer.description}
                     </p>
-                    <button className="btn btn-outline-info">Marquer comme lu</button>
+                    <button className="btn btn-outline-info" onClick={(e) => this.markAsRead(e, offer.id)}>Marquer comme lu</button>
                     </div>
                 </div>
             )

@@ -51,12 +51,17 @@ var Home = function Home() {
             React.createElement(
                 "h1",
                 { className: "text-center" },
-                "Une pr\xE9sentation du systeme"
+                "Trouve emploi"
             ),
             React.createElement(
                 "p",
                 null,
-                "Lorem ipsum dolor sit amet consectetur, adipisicing elit. Non perspiciatis sequi odio animi veniam aliquam, cumque omnis deleniti et tenetur voluptatem quos in, quidem, illo porro maiores iusto amet itaque?"
+                React.createElement(
+                    "strong",
+                    null,
+                    "Trouve emploi"
+                ),
+                " est un systeme professionnel qui vous permet de trouvez rapidement et simplement votre travail avec une interface intuitive et simple. Nous vous listons toutes les offres post\xE9 par des grandes et petites enterprises afin que vous faciez votre choix."
             )
         )
     );
@@ -1071,8 +1076,20 @@ var Notification = function (_React$Component5) {
             });
         }
     }, {
+        key: "markAsRead",
+        value: function markAsRead(e, offer_id) {
+            console.log(offer_id);
+            fetch('/notifications/' + offer_id + '/mark').then(function (res) {
+                return res.json();
+            }).then(function (res) {
+                location.reload();
+            });
+        }
+    }, {
         key: "render",
         value: function render() {
+            var _this18 = this;
+
             if (!this.state.offers.length) {
                 return React.createElement(
                     "div",
@@ -1114,7 +1131,9 @@ var Notification = function (_React$Component5) {
                         ),
                         React.createElement(
                             "button",
-                            { className: "btn btn-outline-info" },
+                            { className: "btn btn-outline-info", onClick: function onClick(e) {
+                                    return _this18.markAsRead(e, offer.id);
+                                } },
                             "Marquer comme lu"
                         )
                     )

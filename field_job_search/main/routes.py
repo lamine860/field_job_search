@@ -2,7 +2,7 @@ from flask import Blueprint, render_template, session, redirect, jsonify, abort
 
 main = Blueprint('main', __name__)
 
-from field_job_search.models import User, Accepted, JobSeeker
+from field_job_search.models import User, Accepted, JobSeeker, Offer, db
 
 @main.route('/', defaults={'u_path': ''})
 @main.route('/<path:u_path>')
@@ -31,3 +31,15 @@ def notifications():
     js = JobSeeker.query.filter_by(user=User.query.get(session.get('user_id'))).first()
     accepted = Accepted.toArrayByJs(js)
     return jsonify({'offers': accepted, 'jobseeker': js.toJson()})
+
+@main.route('/notifications/<offer_id>/mark')
+def mark_as_read(offer_id):
+    if not session.get('user_id'):
+        abort(403)
+    offer = Offer.query.get(offer_id)
+    js = JobSeeker.query.filter_by(user=User.query.get(session.get('user_id'))).first()
+    if offer:
+        Accepted.query.filter_by(offer=offer, jobseeker=js).delete()
+        db.session.commit()
+        return jsonify('success')
+    return jsonify('failure')
