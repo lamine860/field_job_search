@@ -92,7 +92,6 @@ var Offers = function (_React$Component) {
             fetch('/offres/' + offer_id + '/postul').then(function (res) {
                 if (res.ok) {
                     res.json().then(function (offer) {
-                        console.log(offer);
                         current_offer = _this2.state.offers.filter(function (offer) {
                             return offer.id != offer_id;
                         });
@@ -140,10 +139,9 @@ var Offers = function (_React$Component) {
         value: function addToFavories(e, offer_id) {
             e.preventDefault();
             fetch('/offres/' + offer_id + '/favories').then(function (res) {
-                res.json().then(function (res) {
-                    console.log(res);
-                });
+                res.json().then(function (res) {});
             });
+            $(e.target).hide();
         }
     }, {
         key: "render",
@@ -376,6 +374,8 @@ var Enterprise = function (_React$Component2) {
             }).then(function (res) {
                 return console.log(res);
             });
+            $(e.target).hide();
+            $(e.target).next().show();
         }
     }, {
         key: "componentDidMount",
@@ -384,6 +384,7 @@ var Enterprise = function (_React$Component2) {
 
             fetch('/offres/enterprise').then(function (res) {
                 res.json().then(function (res) {
+                    console.log(res[0].jobseekers);
                     _this8.setState({
                         offers: res
                     });
@@ -453,6 +454,19 @@ var Enterprise = function (_React$Component2) {
                     var markUp = function markUp() {
                         return { __html: jb.cv };
                     };
+                    var acceptBtn = !jb.apply ? React.createElement(
+                        "button",
+                        { className: "btn btn-outline-success btn-sm ml-auto",
+                            onClick: function onClick(e) {
+                                return _this9.handleAccept(e, offer.id, jb.id);
+                            } },
+                        "accepter la demande"
+                    ) : React.createElement(
+                        "button",
+                        { className: "btn btn-outline-success ml-auto", disabled: true },
+                        "d\xE9j\xE0 accepter"
+                    );
+                    var style = { display: 'none' };
                     return React.createElement(
                         "div",
                         { className: "media mb-3 border-bottom", key: jb.id },
@@ -472,13 +486,12 @@ var Enterprise = function (_React$Component2) {
                             React.createElement("div", { dangerouslySetInnerHTML: markUp() }),
                             React.createElement(
                                 "div",
-                                { className: "d-flex mb-3" },
+                                { className: "d-flex my-3" },
+                                acceptBtn,
                                 React.createElement(
                                     "button",
-                                    { className: "btn btn-outline-success btn-sm ml-auto", onClick: function onClick(e) {
-                                            return _this9.handleAccept(e, offer.id, jb.id);
-                                        } },
-                                    "accepter la demande"
+                                    { className: "btn btn-outline-success ml-auto", disabled: true, style: style },
+                                    "d\xE9j\xE0 accepter"
                                 )
                             )
                         )

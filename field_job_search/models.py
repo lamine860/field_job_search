@@ -92,7 +92,11 @@ class Offer(db.Model):
         if not jobseeker:
             return False
         return jobseeker not in self.jobseekers 
-        
+    def has_already_apply(self, j):
+        acc = Accepted.query.filter_by(offer=self, jobseeker=j).first()
+        if acc:
+            return True 
+        return False    
 
     def toJson(self):
         jobseekers = self.jobseekers
@@ -101,6 +105,7 @@ class Offer(db.Model):
         count = len(jobseekers)
         js = []
         for j in jobseekers:
+            j.apply = self.has_already_apply(j)
             js.append(j.toJson())
         return {
     'id': self.id, 'name': self.name, 
@@ -113,6 +118,7 @@ class Offer(db.Model):
 
 class JobSeeker(db.Model):
     __tablename__ = 'job_seekers'
+    apply = None
     id = db.Column(db.Integer, primary_key=True)
     first_name = db.Column(db.String(20), nullable=False)
     last_name = db.Column(db.String(20), nullable=False)
@@ -128,7 +134,7 @@ class JobSeeker(db.Model):
         return f'Job Seeker {self.id} -- {self.first_name} {self.last_name}'
         
     def toJson(self):
-        return { 'id': self.id, 'first_name': self.first_name, 'last_name': self.last_name, 'cv': self.cv}    
+        return { 'id': self.id, 'first_name': self.first_name, 'last_name': self.last_name, 'cv': self.cv, 'apply': self.apply}    
 
 
 

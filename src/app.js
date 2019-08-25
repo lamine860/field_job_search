@@ -35,7 +35,6 @@ class Offers extends React.Component{
         fetch('/offres/'+ offer_id +'/postul').then(res => {
             if(res.ok){
                 res.json().then(offer => {
-                    console.log(offer)
                     current_offer = this.state.offers.filter(offer => offer.id != offer_id)
                     this.setState(state => {
                         return {
@@ -76,9 +75,10 @@ class Offers extends React.Component{
         e.preventDefault()
         fetch('/offres/' + offer_id + '/favories').then(res => {
             res.json().then(res => {
-                console.log(res)
+
             })
         })
+        $(e.target).hide()
     }
 
     render()
@@ -232,10 +232,13 @@ class Enterprise extends React.Component {
     handleAccept(e, offer_id, jb_id){
         e.preventDefault()
         fetch('/offres/' + offer_id + '/accept/' +jb_id ).then(res => res.json()).then(res  => console.log(res))
+        $(e.target).hide()
+        $(e.target).next().show()
     }
     componentDidMount() {
         fetch('/offres/enterprise').then(res => {
             res.json().then( res => {
+                console.log(res[0].jobseekers)
                 this.setState({
                 offers: res,
             })})
@@ -266,14 +269,20 @@ class Enterprise extends React.Component {
                 let markUp = function(){
                     return {__html: jb.cv }
                 }
+               let acceptBtn = !jb.apply ? 
+               (<button className="btn btn-outline-success btn-sm ml-auto" 
+               onClick={(e) => this.handleAccept(e, offer.id, jb.id)}>accepter la demande</button>):
+                <button className="btn btn-outline-success ml-auto" disabled>déjà accepter</button>
+                let style = {display: 'none'}
                 return (
                     <div className="media mb-3 border-bottom" key={jb.id}>
                         <div className="media-body">
                             <h5 className="mt-0">{ jb.first_name  + ' ' +  jb.last_name }</h5>
                             <h4>CV:</h4>
                             <div dangerouslySetInnerHTML={markUp()}></div>
-                            <div className="d-flex mb-3">
-                                <button className="btn btn-outline-success btn-sm ml-auto" onClick={(e) => this.handleAccept(e, offer.id, jb.id)}>accepter la demande</button>
+                            <div className="d-flex my-3">
+                                {acceptBtn}
+                                <button className="btn btn-outline-success ml-auto" disabled style={style}>déjà accepter</button>
                             </div>
                         </div>
                     </div>

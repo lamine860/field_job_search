@@ -104,8 +104,7 @@ def add_to_favories(offer_id):
     offer = Offer.query.get(offer_id)
     jb = JobSeeker.query.filter_by(user=User.query.get(session.get('user_id'))).first()
     if not Favorite.query.filter_by(jobseeker=jb, offer=offer).first():
-        favorite = Favorite()
-        favorite.offer_id = offer.id
+        favorite = Favorite(offer=Offer.query.get(offer_id))
         jb.favories.append(favorite)
         db.session.add(favorite)
         db.session.commit()
@@ -121,6 +120,7 @@ def favories():
     jbs = JobSeeker.query.filter_by(user=User.query.get(session.get('user_id'))).first()
     offers = []
     for f in jbs.favories:
+        print('#' * 30, f.offer)
         offers.append(f.offer.toJson())
     return jsonify(offers)
 

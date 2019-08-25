@@ -36,7 +36,7 @@ body
 .notify-icon {
     position: absolute;
     color: white;
-    top:-5px;
-    right: 10px;
+    right: 5px;
+    top: -5px;
 }
 
