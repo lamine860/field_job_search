@@ -16,7 +16,7 @@ mysql-client==0.0.1
 ply==3.11
 pyandoc==0.2.0
 pycparser==2.19
-PyJWT==1.7.1
+PyJWT==2.4.0
 PyMySQL==0.9.3
 pypandoc==1.4
 python-docx==0.8.10
