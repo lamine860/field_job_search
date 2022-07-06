@@ -10,7 +10,7 @@ Flask-SQLAlchemy==2.4.0
 Flask-WTF==0.14.2
 itsdangerous==1.1.0
 Jinja2==2.10.1
-lxml==4.4.1
+lxml==4.9.1
 MarkupSafe==1.1.1
 mysql-client==0.0.1
 ply==3.11
